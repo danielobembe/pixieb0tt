@@ -1,0 +1,8 @@
+betfair/ssl_certs/
+*config.py*
+venv/
+*.py\#
+*.py~
+err_log.txt
+log.txt
+.\#*

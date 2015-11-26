@@ -1,0 +1,16 @@
+--- ROAD MAP ---
+V0.01:
+* get_menu_paths() added
+V0.02:
+* get_menu_paths() updated to handle malformed json (betfair bug)
+V0.03:
+* get_settled_bets() updated to take 'groupBy' parameters
+V0.04:
+* get_menu_paths() updated to replace '/' in names with '-'
+  e.g. 'Over/Under 2.5 Goals' will become 'Over-Under 2.5 Goals'
+* price tools added (convert_price & get_price_spread)
+* get_price_spread() now returns an integer >= 0
+V0.05:
+* modified for Python 3
+V0.06 (April 2015)
+* get_current_bets() added - simplified version of listCurrentOrders 
