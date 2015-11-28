@@ -6,3 +6,6 @@ venv/
 err_log.txt
 log.txt
 .\#*
+__pycache__
+betfair/__pycache__
+
