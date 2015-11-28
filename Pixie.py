@@ -81,21 +81,16 @@ class Pixie(object):
         self.api.app_key = app_key
         self.do_login(username, password)
 
-        #i) get menu paths and filter 
-        #all_menu_paths = self.api.get_menu_paths() #access
-
-        #all_menu_paths = self.api.get_menu_paths_2(self.ignores)
-        #print(all_menu_paths)
-        '''
+        #Get Navigation Menu and Menu paths 
+        all_menu_paths = self.api.get_menu_paths() 
         try:
             all_menu_paths = self.api.get_menu_paths()
-            print(json.dumps(all_menu_paths,sort_keys=True,indent=4,separators=(',', ': ')))
         except:
             raise Exception
-        '''
-
-        #market_paths = self.filter_menu_path(all_menu_paths)   #filter
-
+        #Filter navigation menu accoring to settings.py filters
+        market_paths = self.filter_menu_path(all_menu_paths)
+        print(json.dumps(market_paths,sort_keys=True, indent =4,
+                         separators=(',',': ')))
         sleep(10)
         self.do_logout()
         

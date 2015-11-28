@@ -514,13 +514,6 @@ class API(object):
             # malformed menu from betfair
             return menu_paths # (empty dict)
 
-    def get_menu_paths_2(self, ignores = None):
-        #print("I'm Here!")
-        menu_paths = {'Response':'None'}
-        url = 'https://api.betfair.com/exchange/betting/rest/v1/en/navigation/menu.json'
-        return self.send_http_request(url)
-        #print(resp.status_code)
-        
 
     def get_current_bets(self, market_ids = None, req_id = 1):
         """simplified version of listCurrentOrders.

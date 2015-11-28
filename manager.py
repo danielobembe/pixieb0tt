@@ -4,7 +4,7 @@ from sys import argv, exit
 #User Information
 USERNAME = login_info['username']
 PASSWORD = login_info['password']
-APP_KEY  = login_info['app_key_live']
+APP_KEY  = login_info['app_key_delay']
 
 #Exchange interaction settings
 AUS = False           #default = UK exchange
