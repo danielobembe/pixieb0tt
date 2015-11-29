@@ -264,43 +264,13 @@ class Pixie(object):
         while self.session:
             self.do_throttle()
             self.keep_alive() # refresh login session (every 15 mins)
-            # check bet count
-            betcount = self.get_betcount()
-            if betcount < settings.max_transactions:
-                # get menu paths & filter
-                all_menu_paths = self.api.get_menu_paths(self.ignores)
-                market_paths = self.filter_menu_path(all_menu_paths)
-                # get markets (req'd to get selection ids for runners)
-                market_ids = list(market_paths.keys())
-                markets = self.get_markets(market_ids) # maximum size = 1000
-                if markets:
-                    msg = 'FOUND %s NEW MARKETS...' % len(markets)
-                    self.logger.xprint(msg)
-                    # create bets
-                    all_bets = self.create_bets(markets, market_paths)
-                    # place bets
-                    self.place_bets(all_bets)
-                else:
-                    # none of the markets left in menu will go in-play
-                    for market_id in market_ids:
-                        self.update_ignores(market_id)
-                    sleep(5) # cpu saver (menu parse is intensive!)
-            else:
-                # bet count limit reached for this hour
-                utcnow = datetime.utcnow()
-                nextdate = utcnow + timedelta(hours = 1)
-                nextdate = datetime(nextdate.year, nextdate.month, nextdate.day, nextdate.hour)
-                wait = (nextdate - utcnow).total_seconds()
-                if wait > 0:
-                    mins, secs = divmod(wait, 60)
-                    msg = 'WARNING: TRANSACTION LIMIT REACHED FOR CURRENT HOUR\n'
-                    msg += 'Sleeping for %dm %ds' % (mins, secs)
-                    self.logger.xprint(msg)
-                    # wait until next hour, keeping session alive
-                    time_target = time() + wait
-                    while time() < time_target:
-                        self.keep_alive() # refresh login session (runs every 15 mins)
-                        sleep(0.5) # CPU saver!
+            # get menu paths & filter
+            all_menu_paths = self.api.get_menu_paths(self.ignores)
+            market_paths = self.filter_menu_path(all_menu_paths)
+            # get markets (req'd to get selection ids for runners)
+            market_ids = list(market_paths.keys())
+            markets = self.get_markets(market_ids) # maximum size = 1000
+            print(markets)
         if not self.session:
             msg = 'SESSION TIMEOUT'
             raise Exception(msg)
