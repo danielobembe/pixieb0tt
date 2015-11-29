@@ -514,7 +514,6 @@ class API(object):
             # malformed menu from betfair
             return menu_paths # (empty dict)
 
-
     def get_current_bets(self, market_ids = None, req_id = 1):
         """simplified version of listCurrentOrders.
         returns json containing dict of current bets for given markets.

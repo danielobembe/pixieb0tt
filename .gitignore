@@ -8,4 +8,6 @@ log.txt
 .\#*
 __pycache__
 betfair/__pycache__
-
+*.pyc
+*.zip
+*.pkl
