@@ -269,7 +269,7 @@ class Pixie(object):
             market_paths = self.filter_menu_path(all_menu_paths)
             # get markets (req'd to get selection ids for runners)
             market_ids = list(market_paths.keys())
-            markets = self.get_markets(market_ids) # maximum size = 1000
+            markets = self.get_markets(market_ids[0:10])#maximum size = 1000
             print(markets)
         if not self.session:
             msg = 'SESSION TIMEOUT'

@@ -3,8 +3,7 @@ __version__ = 0.00
 # NOTE: ALL text in each filter must be matched. Text is case senitive!
 # each filter can contain multiple texts, e.g. ['Horse Racing', 'Hcap'] will find all handicap races
 menu_filters = [
-    ['Horse Racing'],       # filter No. 0
-    ['Greyhound Racing']    # filter No. 1
+    ['Soccer']       # filter No. 0
 ]
 
 # NOTE: these are the marketTypeCodes for get_markets()
@@ -16,7 +15,7 @@ menu_filters = [
 # MORE AVAILABLE AT: https://developer.betfair.com/visualisers/api-ng-sports-operations/
 # (use listMarketTypes operation)
 market_types = [
-    'WIN'
+    'MATCH_ODDS'
 ]
 
 # NOTES:
