@@ -3,7 +3,7 @@ __version__ = 0.00
 # NOTE: ALL text in each filter must be matched. Text is case senitive!
 # each filter can contain multiple texts, e.g. ['Horse Racing', 'Hcap'] will find all handicap races
 menu_filters = [
-    ['Soccer']       # filter No. 0
+    ['Soccer', 'Fixtures 30 November']       # filter No. 0
 ]
 
 # NOTE: these are the marketTypeCodes for get_markets()
