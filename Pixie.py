@@ -7,6 +7,7 @@ from logger import Logger
 from time import time, sleep
 from betfair.api_ng import API
 from datetime import datetime, timedelta
+import json
 
 class Pixie(object):
     """betfair laying bot - lays the field using settings.py parameters"""
@@ -252,6 +253,7 @@ class Pixie(object):
                     }
         return keepers
 
+
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
         self.username = username
@@ -263,15 +265,17 @@ class Pixie(object):
         self.do_login(username, password)
         while self.session:
             self.do_throttle()
-            self.keep_alive() # refresh login session (every 15 mins)
-            # get menu paths & filter
-            all_menu_paths = self.api.get_menu_paths(self.ignores)
-            market_paths = self.filter_menu_path(all_menu_paths)
-            print(market_paths)
-            #get markets (req'd to get selection ids for runners)
-            market_ids = list(market_paths.keys())
-            markets = self.get_markets(market_ids)#maximum size=1000
-            #print(markets)
+            self.keep_alive()
+            #get some event
+            events = self.api.get_events(settings.event_filters)
+            books = self.api.get_markets({
+                'filter': settings.event_filters,
+                'marketProjection': ['RUNNER_METADATA'],
+                'maxResults': 50
+            })
+            #print(books)
+            #print(events)
+            print(json.dumps(books,sort_keys=True,indent=4,separators=(',',': ')))
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
