@@ -273,8 +273,9 @@ class Pixie(object):
                 'marketProjection': ['RUNNER_METADATA'],
                 'maxResults': 50
             })
-            #print(events)
-            print(json.dumps(markets,sort_keys=True,indent=4,separators=(',',': ')))
+            #print(events) #get event_ids from here
+            #print(json.dumps(markets,sort_keys=True,indent=4,separators=(',',': ')))
+            print(markets) #get market_ids from here
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
