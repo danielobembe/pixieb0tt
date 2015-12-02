@@ -267,9 +267,9 @@ class Pixie(object):
             self.do_throttle()
             self.keep_alive()
             #get some event
-            events = self.api.get_events(settings.market_filters)
+            events = self.api.get_events(settings.market_filters_interactive)
             markets = self.api.get_markets({
-                'filter': settings.market_filters,
+                'filter': settings.market_filters_interactive,
                 'marketProjection': ['RUNNER_METADATA'],
                 'maxResults': 50
             })
