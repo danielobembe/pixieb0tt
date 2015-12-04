@@ -255,6 +255,8 @@ class Pixie(object):
         return keepers
 
                         #My-addition
+    def prettyPrint(self, json_dict):
+        print(json.dumps(json_dict,sort_keys=True,indent=4,separators=(',',': ')))
 
     def callAping(self, jsonrpc_req): #need to abstract later
         try:
@@ -290,6 +292,17 @@ class Pixie(object):
                 print ('Exception from API-NG' + str(market_catalogue_results['error']))
                 exit()
 
+    def getMarketId(self, marketCatalogueResult):
+        if( marketCatalogueResult is not None):
+            for market in marketCatalogueResult:
+                return market['marketId']
+
+    def getSelectionId(self, marketCatalogueResult):
+        #NEED to modify so user can select (multiple) runners?
+        if(marketCatalogueResult is not None):
+            for market in marketCatalogueResult:
+                return market['runners'][0]['selectionId']
+
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
         self.username = username
@@ -304,13 +317,15 @@ class Pixie(object):
             self.keep_alive()
             #Get and display all events
             eventsList = self.api.get_event_types()
+
             ###user interaction
             #print(json.dumps(eventsList,sort_keys=True,indent=4,separators=(',',': ')))
             print('Here are the list of available events: ')
             for event in eventsList:
                 eventName = event['eventType']['name']
-                print(eventName)
+                print(eventName) #eg: Soccer
             eventChoice = input('Please input an option from the above list: ')
+
             ###Get Id of selected event
             eventId = None
             for event in eventsList:
@@ -320,17 +335,25 @@ class Pixie(object):
                     eventId = event['eventType']['id']
                 else: continue
                 break
+
             ###Display all markets for selected event
             eventMarkets = self.api.get_market_types({'eventTypeIds':[eventId]})
             for market in eventMarkets:
-                print(market["marketType"])
+                print(market["marketType"]) #eg: OVER_UNDER_15
             marketChoice = input("Please select from the list of available Markets below: ")
             print("You selected "+ marketChoice)
             ###Get market-catalogue for user selected event
             marketCatalogue = self.getMarketCatalogue(eventId,marketChoice)
             print("This is the list of runners to bet on in the "+marketChoice+" market:")
             for runner in marketCatalogue[0]["runners"]:
-                print(runner["runnerName"])
+                print(runner["runnerName"]) #eg: Under 1.5 goals
+
+            ###Get market and selection (i.e runner) ids
+            self.prettyPrint(marketCatalogue)
+            market_id = self.getMarketId(marketCatalogue)
+            print("Market " + marketChoice + " has id: " + market_id)
+            selection_id = self.getSelectionId(marketCatalogue)
+            print("selction_id: " + str(selection_id))
             #sign_out?
             self.session = False
         if not self.session:
