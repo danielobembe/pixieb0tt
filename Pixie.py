@@ -303,6 +303,32 @@ class Pixie(object):
             for market in marketCatalogueResult:
                 return market['runners'][0]['selectionId']
 
+    def getMarketBookBestOffers(self, marketId):
+        print ('Calling listMarketBook to read prices for the Market with ID :' + marketId)
+        market_book_req = '{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listMarketBook", "params": {"marketIds":["' + marketId + '"],"priceProjection":{"priceData":["EX_BEST_OFFERS"]}}, "id": 1}'
+        market_book_response = self.callAping(market_book_req)
+        market_book_loads = json.loads(market_book_response)
+        try:
+            market_book_result = market_book_loads['result']
+            #self.prettyPrint(market_book_result)
+            return market_book_result
+        except:
+            print ('Exception from API-NG' + str(market_book_result['error']))
+            exit()
+
+    def printPrices(self, market_book_result):
+        if(market_book_result is not None):
+            print ('Please find Best three available prices for the runners')
+            for marketBook in market_book_result:
+                runners = marketBook['runners']
+                for runner in runners:
+                    print ('Selection id is ' + str(runner['selectionId']))
+                    if (runner['status'] == 'ACTIVE'):
+                        print ('Available to back price :' + str(runner['ex']['availableToBack']))
+                        print ('Available to lay price :' + str(runner['ex']['availableToLay']))
+                    else:
+                        print ('This runner is not active')
+
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
         self.username = username
@@ -354,6 +380,10 @@ class Pixie(object):
             print("Market " + marketChoice + " has id: " + market_id)
             selection_id = self.getSelectionId(marketCatalogue)
             print("selction_id: " + str(selection_id))
+
+            ###Get Market Book - best offers only
+            marketBook = self.getMarketBookBestOffers(market_id)
+            self.printPrices(marketBook)
             #sign_out?
             self.session = False
         if not self.session:
