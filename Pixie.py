@@ -266,16 +266,9 @@ class Pixie(object):
         while self.session:
             self.do_throttle()
             self.keep_alive()
-            #get some event
-            events = self.api.get_events(settings.market_filters_interactive)
-            markets = self.api.get_markets({
-                'filter': settings.market_filters_interactive,
-                'marketProjection': ['RUNNER_METADATA'],
-                'maxResults': 50
-            })
-            #print(events) #get event_ids from here
-            #print(json.dumps(markets,sort_keys=True,indent=4,separators=(',',': ')))
-            print(markets) #get market_ids from here
+            #get and display all events
+            eventsList = self.api.get_event_types()
+            print(json.dumps(eventsList,sort_keys=True,indent=4,separators=(',',': ')))
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
