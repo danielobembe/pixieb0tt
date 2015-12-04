@@ -266,9 +266,27 @@ class Pixie(object):
         while self.session:
             self.do_throttle()
             self.keep_alive()
-            #get and display all events
+            #Get and display all events
             eventsList = self.api.get_event_types()
-            print(json.dumps(eventsList,sort_keys=True,indent=4,separators=(',',': ')))
+            #user interaction
+            #print(json.dumps(eventsList,sort_keys=True,indent=4,separators=(',',': ')))
+            print('Here are the list of available events: ')
+            for event in eventsList:
+                eventName = event['eventType']['name']
+                print(eventName)
+            eventChoice = input('Please input an option from the above list: ')
+            #Get Id of selected event
+            eventId = None
+            for event in eventsList:
+                eventName = event['eventType']['name']
+                eventId = None
+                if (eventName == eventChoice):
+                    eventId = event['eventType']['id']
+                else: continue
+                break
+            print("You choice, " + eventChoice + " has an event ID of " +str(eventId))
+            #Display all markets for selected event 
+            #sign_out?
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
