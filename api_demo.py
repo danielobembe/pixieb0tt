@@ -68,7 +68,7 @@ Calling marketCatalouge to get marketDetails
 
 def getMarketCatalogueForNextGBWin(eventTypeID):
     #Note: A market catalogue is the outcomes you can buy/sell in a particular market
-    #eg: a particular horse, winning in the "WIN" market
+    #eg: a particular horse, winning in the "WIN" market .. I think.
     if (eventTypeID is not None):
         print ('Calling listMarketCatalouge Operation to get MarketID and selectionId')
         now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')

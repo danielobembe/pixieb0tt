@@ -5,15 +5,17 @@ menu_filters = [
     ['Soccer', 'Fixtures 30 November']       # filter No. 0
 ]
 
-market_filters_old = { #Note: input filters from top-down
+market_filters = { #Note: input filters from top-down
     'inPlayOnly': True,
     'eventIds': ['27614715'], # <== taken from print(events)
     'marketId': ['1.122072553']
 }
 
-market_filters_interactive = {
-    #set this up so that user can set filters
+event_to_market_filter = {
+    
 }
+
+
 
 #Under 2.5s: 0-0,0-1,0-2,1-0,
 market_ids = [

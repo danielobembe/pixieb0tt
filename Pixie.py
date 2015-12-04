@@ -284,8 +284,12 @@ class Pixie(object):
                     eventId = event['eventType']['id']
                 else: continue
                 break
-            print("You choice, " + eventChoice + " has an event ID of " +str(eventId))
-            #Display all markets for selected event 
+            #Display all markets for selected event
+            eventMarkets = self.api.get_market_types({'eventTypeIds':[eventId]})
+            for market in eventMarkets:
+                print(market["marketType"])
+            marketChoice = input("Please select from the list of available Markets below: ")
+            print("You selected "+ marketChoice)
             #sign_out?
             self.session = False
         if not self.session:
