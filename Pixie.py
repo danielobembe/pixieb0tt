@@ -8,6 +8,7 @@ from time import time, sleep
 from betfair.api_ng import API
 from datetime import datetime, timedelta
 import json
+import urllib, urllib.request, urllib.error
 
 class Pixie(object):
     """betfair laying bot - lays the field using settings.py parameters"""
@@ -253,6 +254,41 @@ class Pixie(object):
                     }
         return keepers
 
+                        #My-addition
+
+    def callAping(self, jsonrpc_req): #need to abstract later
+        try:
+            req = urllib.request.Request("https://api.betfair.com/exchange/betting/json-rpc/v1",
+                                        jsonrpc_req.encode('utf-8'),
+                                        headers = {'X-Application':self.api.app_key ,
+                                        'X-Authentication':self.api.session_token,
+                                        'content-type': 'application/json'})
+            response = urllib.request.urlopen(req)
+            jsonResponse = response.read()
+            return jsonResponse.decode('utf-8')
+        except urllib.error.URLError as e:
+            print (e.reason)
+            print ('Oops no service available at ' + str(url))
+            exit()
+        except urllib.error.HTTPError:
+            print ('Oops not a valid operation from the service ' + str(url))
+            exit()
+
+    def getMarketCatalogue(self, eventTypeID, marketName):
+        #Note: a market catalogue gives all the outcomes for "sale" in a market
+        if (eventTypeID is not None):
+            print ('Calling listMarketCatalouge Operation to get MarketID and selectionId')
+            now = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+            market_catalogue_req = '{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listMarketCatalogue", "params": {"filter":{"eventTypeIds":["' + eventTypeID + '"],"marketCountries":["GB"],"marketTypeCodes":["'+marketName+ '"],'\
+                                                                                                                                                                 '"marketStartTime":{"from":"' + now + '"}},"sort":"FIRST_TO_START","maxResults":"1","marketProjection":["RUNNER_METADATA"]}, "id": 1}'
+            market_catalogue_response = self.callAping(market_catalogue_req)
+            market_catalogue_loads = json.loads(market_catalogue_response)
+            try:
+                market_catalogue_results = market_catalogue_loads['result']
+                return market_catalogue_results
+            except:
+                print ('Exception from API-NG' + str(market_catalogue_results['error']))
+                exit()
 
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
@@ -268,14 +304,14 @@ class Pixie(object):
             self.keep_alive()
             #Get and display all events
             eventsList = self.api.get_event_types()
-            #user interaction
+            ###user interaction
             #print(json.dumps(eventsList,sort_keys=True,indent=4,separators=(',',': ')))
             print('Here are the list of available events: ')
             for event in eventsList:
                 eventName = event['eventType']['name']
                 print(eventName)
             eventChoice = input('Please input an option from the above list: ')
-            #Get Id of selected event
+            ###Get Id of selected event
             eventId = None
             for event in eventsList:
                 eventName = event['eventType']['name']
@@ -284,12 +320,17 @@ class Pixie(object):
                     eventId = event['eventType']['id']
                 else: continue
                 break
-            #Display all markets for selected event
+            ###Display all markets for selected event
             eventMarkets = self.api.get_market_types({'eventTypeIds':[eventId]})
             for market in eventMarkets:
                 print(market["marketType"])
             marketChoice = input("Please select from the list of available Markets below: ")
             print("You selected "+ marketChoice)
+            ###Get market-catalogue for user selected event
+            marketCatalogue = self.getMarketCatalogue(eventId,marketChoice)
+            print("This is the list of runners to bet on in the "+marketChoice+" market:")
+            for runner in marketCatalogue[0]["runners"]:
+                print(runner["runnerName"])
             #sign_out?
             self.session = False
         if not self.session:
