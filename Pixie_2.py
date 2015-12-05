@@ -81,18 +81,18 @@ class Pixie(object):
                 msg = 'api.keep_alive() resp = %s' % resp
                 raise Exception(msg)
 
-
+    #funct: print json dicts in a readable format
     def prettyPrint(self, json_dict):
         print(json.dumps(json_dict,sort_keys=True,indent=4,separators=(',',': ')))
 
-
+    #funct: asks for eventType and returns eventType's id
     def selectEventType(self):
         eventTypes = self.api.get_event_types()
         print('Here are the types of events available: ')
         for eventType in eventTypes:
             eventTypeName = eventType['eventType']['name']
             print(eventTypeName)
-        eventTypeChoice = input('Please input an option from above list: ')
+        eventTypeChoice = input('Please input an option from the above list: ')
         eventTypeId = None
         for eventType in eventTypes:
             eventTypeName = eventType['eventType']['name']
@@ -101,6 +101,7 @@ class Pixie(object):
             else: continue
             return eventTypeId
 
+    #funct: asks for events (given a particular eventType), and returns event id
     def selectEvent(self, eventTypeId):
         filter = {'eventTypeIds':[eventTypeId]}
         events = self.api.get_events(filter)
@@ -108,6 +109,14 @@ class Pixie(object):
         for event in events:
             eventName = event["event"]["name"]
             print(eventName)
+        eventChoice = input('Please input an option from the above list: ')
+        eventId = None
+        for event in events:
+            eventName = event["event"]["name"]
+            if (eventName == eventChoice):
+                eventId = event["event"]["id"]
+            else: continue
+            return eventId
         #self.prettyPrint(events)
 
     def run(self, username = '', password = '', app_key = '', aus = False):
@@ -123,7 +132,8 @@ class Pixie(object):
             self.do_throttle()
             self.keep_alive()
             eventTypeId = self.selectEventType()
-            self.selectEvent(eventTypeId)
+            eventId = self.selectEvent(eventTypeId)
+            print(eventId)
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
