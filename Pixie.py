@@ -375,7 +375,7 @@ class Pixie(object):
                 print(runner["runnerName"]) #eg: Under 1.5 goals
 
             ###Get market and selection (i.e runner) ids
-            self.prettyPrint(marketCatalogue)
+            #self.prettyPrint(marketCatalogue)
             market_id = self.getMarketId(marketCatalogue)
             print("Market " + marketChoice + " has id: " + market_id)
             selection_id = self.getSelectionId(marketCatalogue)
