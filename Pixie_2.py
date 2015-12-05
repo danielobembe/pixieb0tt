@@ -119,6 +119,16 @@ class Pixie(object):
             return eventId
         #self.prettyPrint(events)
 
+
+    def showMarkets(self, eventId):
+        filter = {'eventIds':[eventId]}
+        params = { 'filter':filter,
+                   'marketProjection':['RUNNER_METADATA','RUNNER_DESCRIPTION'],
+                   'maxResults': 50 }
+        markets = self.api.get_markets(params)
+        return markets
+        #self.prettyPrint(markets)
+
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
         self.username = username
@@ -133,7 +143,9 @@ class Pixie(object):
             self.keep_alive()
             eventTypeId = self.selectEventType()
             eventId = self.selectEvent(eventTypeId)
-            print(eventId)
+            eventMarkets = self.showMarkets(eventId)
+            for market in eventMarkets:
+                print(market["marketName"])
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
