@@ -81,20 +81,34 @@ class Pixie(object):
                 msg = 'api.keep_alive() resp = %s' % resp
                 raise Exception(msg)
 
-    def selectEvent(self):
+
+    def prettyPrint(self, json_dict):
+        print(json.dumps(json_dict,sort_keys=True,indent=4,separators=(',',': ')))
+
+
+    def selectEventType(self):
         eventTypes = self.api.get_event_types()
         print('Here are the types of events available: ')
         for eventType in eventTypes:
-            eventName = eventType['eventType']['name']
-            print(eventName)
-        eventChoice = input('Please input an option from above list: ')
-        eventId = None
+            eventTypeName = eventType['eventType']['name']
+            print(eventTypeName)
+        eventTypeChoice = input('Please input an option from above list: ')
+        eventTypeId = None
         for eventType in eventTypes:
-            eventName = eventType['eventType']['name']
-            if (eventName == eventChoice):
-                eventId = eventType['eventType']['id']
+            eventTypeName = eventType['eventType']['name']
+            if (eventTypeName == eventTypeChoice):
+                eventTypeId = eventType['eventType']['id']
             else: continue
-            return eventId
+            return eventTypeId
+
+    def selectEvent(self, eventTypeId):
+        filter = {'eventTypeIds':[eventTypeId]}
+        events = self.api.get_events(filter)
+        print('\n\nEVENTS ON OFFER:')
+        for event in events:
+            eventName = event["event"]["name"]
+            print(eventName)
+        #self.prettyPrint(events)
 
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
@@ -108,8 +122,8 @@ class Pixie(object):
         while self.session:
             self.do_throttle()
             self.keep_alive()
-            eventId = self.selectEvent()
-            print(eventId)
+            eventTypeId = self.selectEventType()
+            self.selectEvent(eventTypeId)
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
