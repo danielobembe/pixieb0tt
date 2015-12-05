@@ -119,7 +119,7 @@ class Pixie(object):
             return eventId
         #self.prettyPrint(events)
 
-
+    #funct: shows markets on offer for event representd by eventId
     def showMarkets(self, eventId):
         filter = {'eventIds':[eventId]}
         params = { 'filter':filter,
@@ -128,6 +128,17 @@ class Pixie(object):
         markets = self.api.get_markets(params)
         return markets
         #self.prettyPrint(markets)
+
+
+    def selectMarkets(self):
+        choices_A = input("Input liquid markets. Note: max = 3. Separate using ',' and no spaces between choices:\n")
+        liquidMarkets = map(str,choices_A.split(',') )
+        choices_B = input("Input non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
+        nonLiquidMarkets = map(str,choices_B.split(',') )
+        marketChoices = [liquidMarkets, nonLiquidMarkets]
+        #liquidMarketsIds = []
+
+
 
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
@@ -146,6 +157,7 @@ class Pixie(object):
             eventMarkets = self.showMarkets(eventId)
             for market in eventMarkets:
                 print(market["marketName"])
+            #self.selectMarkets()
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
