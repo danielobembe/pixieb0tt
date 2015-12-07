@@ -154,7 +154,27 @@ class Pixie(object):
         self.prettyPrint(marketBook)
         return marketBook
 
-        
+
+    def printPrices(self, market_book_result):
+        if(market_book_result is not None):
+            print ('Please find Best three available prices for the runners')
+            for marketBook in market_book_result:
+                runners = marketBook['runners']
+                for runner in runners:
+                    print ('Selection id is ' + str(runner['selectionId']))
+                    if (runner['status'] == 'ACTIVE'):
+                        print ('Available to back price :' + str(runner['ex']['availableToBack']))
+                        print ('Available to lay price :' + str(runner['ex']['availableToLay']))
+                    else:
+                        print ('This runner is not active')
+                print("****"*10)
+
+    """
+    def printPrices(self, marketBooks):
+        for marketBook in marketBooks:
+            self.printPriceInfo(marketBook)
+        print('==='*10)
+    """
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
         self.username = username
@@ -180,7 +200,8 @@ class Pixie(object):
             print("\nAcquired choice Ids: ")
             for each in marketIds:
                 print(each)
-            self.getMarketPrices(marketIds)
+            marketBooks = self.getMarketPrices(marketIds)
+            self.printPrices(marketBooks)
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
