@@ -151,7 +151,7 @@ class Pixie(object):
 
     def getMarketPrices(self, marketIds):
         marketBook = self.api.get_market_books(market_ids=marketIds,price_data=['EX_BEST_OFFERS'])
-        self.prettyPrint(marketBook)
+        #self.prettyPrint(marketBook)
         return marketBook
 
 
@@ -200,9 +200,10 @@ class Pixie(object):
             print("\nAcquired choice Ids: ")
             for each in marketIds:
                 print(each)
-            marketBooks = self.getMarketPrices(marketIds)
-            self.printPrices(marketBooks)
-            self.session = False
+            while True:
+                marketBooks = self.getMarketPrices(marketIds)
+                self.printPrices(marketBooks)
+            #self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
             print(msg)
