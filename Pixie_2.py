@@ -126,21 +126,27 @@ class Pixie(object):
                    'marketProjection':['RUNNER_METADATA','RUNNER_DESCRIPTION'],
                    'maxResults': 50 }
         markets = self.api.get_markets(params)
-        return markets
         #self.prettyPrint(markets)
+        return markets
 
+    #funct: return marketIds for a selected set of markets
+    def selectMarkets(self, choices, eventMarkets):
+        liquidMarkets = map(str,choices.split(',') )
+        liquidMarketIds = []
+        for market in liquidMarkets:
+            for eventMarket in eventMarkets:
+                if (market == eventMarket['marketName']):
+                    liquidMarketIds.append(eventMarket['marketId'])
+        return liquidMarketIds
 
-    def selectMarkets(self):
-        choices_A = input("Input liquid markets. Note: max = 3. Separate using ',' and no spaces between choices:\n")
-        liquidMarkets = map(str,choices_A.split(',') )
-        choices_B = input("Input non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
-        nonLiquidMarkets = map(str,choices_B.split(',') )
-        marketChoices = [liquidMarkets, nonLiquidMarkets]
-        for choices in marketChoices:
-            for choice in choices:
-                print(choice)
-
-
+    #combine 2 sets of marketIds into 1 which is suitable for passing to api call
+    def combineMarkets(self,liquidSet, illiquidSet):
+        marketSet = []
+        for each in liquidSet:
+            marketSet.append(each)
+        for each in illiquidSet:
+            marketSet.append(each)
+        return marketSet
 
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
@@ -159,7 +165,14 @@ class Pixie(object):
             eventMarkets = self.showMarkets(eventId)
             for market in eventMarkets:
                 print(market["marketName"])
-            self.selectMarkets()
+            liquidChoices = input("Input liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
+            liquidMarketIds = self.selectMarkets(liquidChoices, eventMarkets)
+            illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
+            illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
+            marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketIds)
+            print("\nAcquired choice Ids: ")
+            for each in marketIds:
+                print(each)
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
