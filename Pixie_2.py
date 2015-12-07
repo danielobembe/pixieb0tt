@@ -136,7 +136,9 @@ class Pixie(object):
         choices_B = input("Input non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
         nonLiquidMarkets = map(str,choices_B.split(',') )
         marketChoices = [liquidMarkets, nonLiquidMarkets]
-        #liquidMarketsIds = []
+        for choices in marketChoices:
+            for choice in choices:
+                print(choice)
 
 
 
@@ -157,7 +159,7 @@ class Pixie(object):
             eventMarkets = self.showMarkets(eventId)
             for market in eventMarkets:
                 print(market["marketName"])
-            #self.selectMarkets()
+            self.selectMarkets()
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
