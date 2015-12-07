@@ -148,6 +148,13 @@ class Pixie(object):
             marketSet.append(each)
         return marketSet
 
+
+    def getMarketPrices(self, marketIds):
+        marketBook = self.api.get_market_books(market_ids=marketIds,price_data=['EX_BEST_OFFERS'])
+        self.prettyPrint(marketBook)
+        return marketBook
+
+        
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
         self.username = username
@@ -173,6 +180,7 @@ class Pixie(object):
             print("\nAcquired choice Ids: ")
             for each in marketIds:
                 print(each)
+            self.getMarketPrices(marketIds)
             self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
