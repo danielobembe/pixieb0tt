@@ -177,17 +177,14 @@ class Pixie(object):
         if(market_book_result is not None):
             print ('Please find Best three available prices for the runners')
             for marketBook in market_book_result:
-                #print marketBook name
                 marketId = marketBook["marketId"]
                 marketName = None
                 for market in eventMarkets:
                     if(marketId == market["marketId"]):
                         marketName = market["marketName"]
-                    #break
                 print(("===="* 5)+"Market Name: " + marketName + ("===="* 5))
                 runners = marketBook['runners']
                 for runner in runners:
-                    #instead of selectionId, print runner name
                     selectionId = runner["selectionId"]
                     runnerName = None
                     for market in eventMarkets:
@@ -195,15 +192,12 @@ class Pixie(object):
                             if(run['selectionId']==selectionId):
                                 runnerName = run["runnerName"]
                                 print("   | "+runnerName+" |")
-                            #break
-                    #print ('Runner name is' + runnerName)
-                    #print ('Selection id is ' + str(runner['selectionId']))
                     if (runner['status'] == 'ACTIVE'):
                         print ('Available to back price :' + str(runner['ex']['availableToBack']))
                         print ('Available to lay price :' + str(runner['ex']['availableToLay']))
                     else:
                         print ('This runner is not active')
-                #print("****"*10)
+
 
 
     def run(self, username = '', password = '', app_key = '', aus = False):
