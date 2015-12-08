@@ -126,7 +126,7 @@ class Pixie(object):
                    'marketProjection':['RUNNER_METADATA','RUNNER_DESCRIPTION'],
                    'maxResults': 50 }
         markets = self.api.get_markets(params)
-        self.prettyPrint(markets)
+        #self.prettyPrint(markets)
         return markets
 
     #funct: return marketIds for a selected set of markets
