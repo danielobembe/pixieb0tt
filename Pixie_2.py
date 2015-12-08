@@ -126,7 +126,7 @@ class Pixie(object):
                    'marketProjection':['RUNNER_METADATA','RUNNER_DESCRIPTION'],
                    'maxResults': 50 }
         markets = self.api.get_markets(params)
-        #self.prettyPrint(markets)
+        self.prettyPrint(markets)
         return markets
 
     #funct: return marketIds for a selected set of markets
@@ -169,12 +169,43 @@ class Pixie(object):
                         print ('This runner is not active')
                 print("****"*10)
 
-    """
-    def printPrices(self, marketBooks):
-        for marketBook in marketBooks:
-            self.printPriceInfo(marketBook)
-        print('==='*10)
-    """
+    def printPrices_2(self, market_book_result):
+        if(market_book_result is not None):
+            self.prettyPrint(market_book_result)
+
+    def printPricesMod(self, market_book_result, eventMarkets):
+        if(market_book_result is not None):
+            print ('Please find Best three available prices for the runners')
+            for marketBook in market_book_result:
+                #print marketBook name
+                marketId = marketBook["marketId"]
+                marketName = None
+                for market in eventMarkets:
+                    if(marketId == market["marketId"]):
+                        marketName = market["marketName"]
+                    #break
+                print(("===="* 5)+"Market Name: " + marketName + ("===="* 5))
+                runners = marketBook['runners']
+                for runner in runners:
+                    #instead of selectionId, print runner name
+                    selectionId = runner["selectionId"]
+                    runnerName = None
+                    for market in eventMarkets:
+                        for run in market["runners"]:
+                            if(run['selectionId']==selectionId):
+                                runnerName = run["runnerName"]
+                                print("   | "+runnerName+" |")
+                            #break
+                    #print ('Runner name is' + runnerName)
+                    #print ('Selection id is ' + str(runner['selectionId']))
+                    if (runner['status'] == 'ACTIVE'):
+                        print ('Available to back price :' + str(runner['ex']['availableToBack']))
+                        print ('Available to lay price :' + str(runner['ex']['availableToLay']))
+                    else:
+                        print ('This runner is not active')
+                #print("****"*10)
+
+
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
         self.username = username
@@ -200,9 +231,13 @@ class Pixie(object):
             print("\nAcquired choice Ids: ")
             for each in marketIds:
                 print(each)
-            while True:
+            lockIn = True
+            while lockIn:
                 marketBooks = self.getMarketPrices(marketIds)
-                self.printPrices(marketBooks)
+                #self.prettyPrint(marketBooks)
+                #self.printPrices(marketBooks)
+                self.printPricesMod(marketBooks, eventMarkets)
+                #lockIn = False
             #self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
