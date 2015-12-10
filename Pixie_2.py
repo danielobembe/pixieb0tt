@@ -191,7 +191,7 @@ class Pixie(object):
                         for run in market["runners"]:
                             if(run['selectionId']==selectionId):
                                 runnerName = run["runnerName"]
-                                print("   | "+runnerName+" |")
+                    print("   | "+runnerName+" |") #<=====PROBLEM
                     if (runner['status'] == 'ACTIVE'):
                         print ('Available to back price :' + str(runner['ex']['availableToBack']))
                         print ('Available to lay price :' + str(runner['ex']['availableToLay']))
@@ -214,7 +214,7 @@ class Pixie(object):
             self.keep_alive()
             eventTypeId = self.selectEventType()
             eventId = self.selectEvent(eventTypeId)
-            eventMarkets = self.showMarkets(eventId)
+            eventMarkets = self.showMarkets(eventId) #returns all markets for a given event
             for market in eventMarkets:
                 print(market["marketName"])
             liquidChoices = input("Input liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
@@ -227,7 +227,7 @@ class Pixie(object):
                 print(each)
             lockIn = True
             while lockIn:
-                marketBooks = self.getMarketPrices(marketIds)
+                marketBooks = self.getMarketPrices(marketIds) #returns array of marketbooks for each selected market
                 #self.prettyPrint(marketBooks)
                 #self.printPrices(marketBooks)
                 self.printPricesMod(marketBooks, eventMarkets)
