@@ -174,56 +174,6 @@ class Pixie(object):
         if(market_book_result is not None):
             self.prettyPrint(market_book_result)
 
-    def printPricesMod(self, market_book_result, eventMarkets):
-        if(market_book_result is not None):
-            #create new marketBookResult object
-            mbr = m_b_r.MarketBookResult()
-            print ('Please find Best three available prices for the runners')
-            for marketBook in market_book_result:
-                #create new marketBook object
-                mbk = m_b_r.MarketBook()
-                marketId = marketBook["marketId"]
-                marketName = None
-                for market in eventMarkets:
-                    if(marketId == market["marketId"]):
-                        marketName = market["marketName"]
-                #marketBook.name = marketName
-                mbk.name = marketName
-                #marketBook.marketId = marketId
-                mbk.marketId = marketId
-                print(("===="* 5)+"Market Name: " + marketName + ("===="* 5))  #Print market
-                runners = marketBook['runners']
-                for runner in runners:
-                    #create new Runner object
-                    rnr = m_b_r.Runner()
-                    selectionId = runner["selectionId"]
-                    runnerName = None
-                    for market in eventMarkets:
-                        for run in market["runners"]:
-                            if(run['selectionId']==selectionId):
-                                runnerName = run["runnerName"]
-                    #Runner.runnerName = runnerName
-                    rnr.runnerName = runnerName
-                    #Runner.selectionId = selectionId
-                    rnr.selectionId = selectionId
-                    print("   | "+runnerName+" |")                             #Print runners
-                    if (runner['status'] == 'ACTIVE'):
-                        print ('Available to back price :' + str(runner['ex']['availableToBack']))
-                        #runner.avalableToBack = runner['ex']['availableToBack']
-                        rnr.availableToBack = runner['ex']['availableToBack']
-                        print ('Available to lay price :' + str(runner['ex']['availableToLay']))
-                        #runner.avalableToBack = runner['ex']['availableToLay']
-                        rnr.availableToLay = runner['ex']['availableToLay']
-                        #runner.active = True
-                        rnr.active = True
-                    else:
-                        print ('This runner is not active')
-                    #marketBook.runner.append[runner]
-                    mbk.runners.append(rnr)
-                #marketBookResults.marketBooks.append(marketBook)
-                mbr.marketBooks.append(mbk)
-            #return marketBookResult
-            return mbr
 
     def encapsulatePrices(self, market_book_result, eventMarkets):
         if(market_book_result is not None):
@@ -254,7 +204,7 @@ class Pixie(object):
                         _runner.active = True   #else: active==False
                     _marketbook.runners.append(_runner)
                 mbr.marketBooks.append(_marketbook)
-            return True
+            return mbr
 
 
     def run(self, username = '', password = '', app_key = '', aus = False):
@@ -287,8 +237,8 @@ class Pixie(object):
                 marketBooks = self.getMarketPrices(marketIds) #returns array of marketbooks for each selected market
                 #self.prettyPrint(marketBooks)
                 #self.printPrices(marketBooks)
-                encapsulated = self.encapsulatePrices(marketBooks, eventMarkets)
-                print(str(encapsulated))
+                encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
+                encapsulatedBook.printBooks()
                 lockIn = False
             #self.session = False
         if not self.session:

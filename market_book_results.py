@@ -18,6 +18,18 @@ class MarketBookResult(object):
     """Collection of marketbooks."""
     marketBooks = propertyDescriptor([])
 
+    def printBooks(self):
+        print('Please find Best three available prices for the runners: ')
+        for marketBook in self.marketBooks:
+            print(("===="* 5)+"Market Name: " + marketBook.name + ("===="* 5))  #Print market
+            for runner in marketBook.runners:
+                print("Runner Name:   | "+runner.runnerName+" |")
+                if (runner.active == True):
+                    print ('Available to back price :' + str(runner.availableToBack))
+                    print ('Available to lay price :' + str(runner.availableToLay))
+                else:
+                    print ('This runner is not active')
+        return
 
 
 class MarketBook(object):
