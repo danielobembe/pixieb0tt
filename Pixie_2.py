@@ -225,6 +225,36 @@ class Pixie(object):
             #return marketBookResult
             return mbr
 
+    def encapsulatePrices(self, market_book_result, eventMarkets):
+        if(market_book_result is not None):
+            mbr = m_b_r.MarketBookResult()             #create new marketBookResult object
+            for marketBook in market_book_result:
+                _marketbook = m_b_r.MarketBook()       #create new marketBook object
+                marketId = marketBook["marketId"]
+                marketName = None
+                for market in eventMarkets:
+                    if(marketId == market["marketId"]):
+                        marketName = market["marketName"]
+                _marketbook.name = marketName         #marketBook.name = marketName
+                _marketbook.marketId = marketId       #marketBook.marketId = marketId
+                runners = marketBook['runners']
+                for runner in runners:
+                    _runner = m_b_r.Runner()          #create new Runner object
+                    selectionId = runner["selectionId"]
+                    runnerName = None
+                    for market in eventMarkets:
+                        for run in market["runners"]:
+                            if(run['selectionId']==selectionId):
+                                runnerName = run["runnerName"]
+                    _runner.runnerName = runnerName   #Runner.runnerName = runnerName
+                    _runner.selectionId = selectionId #Runner.selectionId = selectionId
+                    if (runner['status'] == 'ACTIVE'):
+                        _runner.availableToBack = runner['ex']['availableToBack']
+                        _runner.availableToLay = runner['ex']['availableToLay']
+                        _runner.active = True   #else: active==False
+                    _marketbook.runners.append(_runner)
+                mbr.marketBooks.append(_marketbook)
+            return True
 
 
     def run(self, username = '', password = '', app_key = '', aus = False):
@@ -257,7 +287,7 @@ class Pixie(object):
                 marketBooks = self.getMarketPrices(marketIds) #returns array of marketbooks for each selected market
                 #self.prettyPrint(marketBooks)
                 #self.printPrices(marketBooks)
-                encapsulated = self.printPricesMod(marketBooks, eventMarkets)
+                encapsulated = self.encapsulatePrices(marketBooks, eventMarkets)
                 print(str(encapsulated))
                 lockIn = False
             #self.session = False
