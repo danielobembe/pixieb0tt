@@ -182,7 +182,7 @@ class Pixie(object):
                 for market in eventMarkets:
                     if(marketId == market["marketId"]):
                         marketName = market["marketName"]
-                print(("===="* 5)+"Market Name: " + marketName + ("===="* 5))
+                print(("===="* 5)+"Market Name: " + marketName + ("===="* 5))  #Print market
                 runners = marketBook['runners']
                 for runner in runners:
                     selectionId = runner["selectionId"]
@@ -191,7 +191,7 @@ class Pixie(object):
                         for run in market["runners"]:
                             if(run['selectionId']==selectionId):
                                 runnerName = run["runnerName"]
-                    print("   | "+runnerName+" |") #<=====PROBLEM
+                    print("   | "+runnerName+" |")                             #Print runners
                     if (runner['status'] == 'ACTIVE'):
                         print ('Available to back price :' + str(runner['ex']['availableToBack']))
                         print ('Available to lay price :' + str(runner['ex']['availableToLay']))
@@ -231,7 +231,7 @@ class Pixie(object):
                 #self.prettyPrint(marketBooks)
                 #self.printPrices(marketBooks)
                 self.printPricesMod(marketBooks, eventMarkets)
-                #lockIn = False
+                lockIn = False
             #self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
