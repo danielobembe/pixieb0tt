@@ -24,11 +24,11 @@ class MarketBook(object):
     """Class representation of a marketbook, with built-in useful behaviors"""
     marketId = propertyDescriptor(0)
     name = propertyDescriptor('')
-    runner = propertyDescriptor([])
+    runners = propertyDescriptor([])
 
 
 
-class Runners(object):
+class Runner(object):
     """Class representation of a runner"""
     selectionId = propertyDescriptor(0)
     runnerName = propertyDescriptor('')
