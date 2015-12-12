@@ -66,7 +66,14 @@ class MarketBook(object):
         syntheticBack = float(1/invertedSum)
         return syntheticBack
 
-
+    def computeSyntheticLay(self):
+        inverted = []
+        for runner in self.runners:
+            inverted.append(1/float(runner.availableToLay))
+        invertedSum = sum(inverted)
+        print("Sum of inverted Lay Prices: " + str(invertedSum))
+        syntheticLay = float(1/invertedSum)
+        return syntheticLay
 
 
 class Runner(object):
