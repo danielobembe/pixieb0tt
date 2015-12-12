@@ -66,10 +66,21 @@ class MarketBookResult(object):
 
 
     def callArbitrage(self):
-        liquid = self.getLiquidMarket().name
-        illiquid = self.getIlliquidMarket().name
-        print('Liquid Market: '+ liquid)
-        print('Illiquid Market: '+ illiquid)
+        liquid = self.getLiquidMarket()
+        illiquid = self.getIlliquidMarket()
+        #print('Liquid Market: '+ liquid.name)
+        #print('Illiquid Market: '+ illiquid.name)
+        liquidBack = liquid.computeSyntheticBack()
+        liquidLay  = liquid.computeSyntheticLay()
+        illiquidBack = illiquid.computeSyntheticBack()
+        illiquidLay = illiquid.computeSyntheticLay()
+        #conditions:
+        if (liquidBack >= illiquidLay):
+            print('Arbitrage, profit: '+ (liquidBack - illiquidLay))
+        if (liquidLay <= illiquidBack):
+            print('Arbitrage, profit: '+ (liquidLay - illiquidBack))
+        if (liquidBack < illiquidLay or liquidLay > illiquidBack ):
+            print('No-Arb condition holding.')
         return
 
 

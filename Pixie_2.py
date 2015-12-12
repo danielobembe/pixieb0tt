@@ -240,7 +240,7 @@ class Pixie(object):
                 encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
                 #encapsulatedBook.printBooks()
                 encapsulatedBook.callArbitrage()
-                lockIn = False
+                #lockIn = False
             #self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
