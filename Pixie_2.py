@@ -238,7 +238,8 @@ class Pixie(object):
                 #self.prettyPrint(marketBooks)
                 #self.printPrices(marketBooks)
                 encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
-                encapsulatedBook.printBooks()
+                #encapsulatedBook.printBooks()
+                encapsulatedBook.callArbitrage()
                 lockIn = False
             #self.session = False
         if not self.session:

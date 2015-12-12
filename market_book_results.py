@@ -1,19 +1,5 @@
 from weakref import WeakKeyDictionary
 
-#
-# class propertyDescriptor(object):
-#     """Descriptor object to access/modify class properties"""
-#     def __init__(self, default):
-#         self._name = default
-#
-#     def __set__(self, instance, name_):
-#         self._name = name_
-#
-#     def __get__(self, instance, owner):
-#         return self._name
-#
-#     def __delete__(self, instance):
-#          del self._name
 
 class propertyDescriptor(object):
     def __init__(self, default):
@@ -64,9 +50,27 @@ class MarketBookResult(object):
         return
 
 
-    def callArbitrage(self):
-        return
+    def getLiquidMarket(self):
+        liquid = None
+        for mbk in self.marketBooks:
+            if (mbk.liquidity == 'liquidMarket'):
+                liquid = mbk
+        return liquid
 
+    def getIlliquidMarket(self):
+        illiquid = None
+        for mbk in self.marketBooks:
+            if (mbk.liquidity == 'illiquidMarket'):
+                illiquid = mbk
+        return illiquid
+
+
+    def callArbitrage(self):
+        liquid = self.getLiquidMarket().name
+        illiquid = self.getIlliquidMarket().name
+        print('Liquid Market: '+ liquid)
+        print('Illiquid Market: '+ illiquid)
+        return
 
 
 class MarketBook(object):
