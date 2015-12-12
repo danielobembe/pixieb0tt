@@ -1,17 +1,36 @@
+from weakref import WeakKeyDictionary
+
+#
+# class propertyDescriptor(object):
+#     """Descriptor object to access/modify class properties"""
+#     def __init__(self, default):
+#         self._name = default
+#
+#     def __set__(self, instance, name_):
+#         self._name = name_
+#
+#     def __get__(self, instance, owner):
+#         return self._name
+#
+#     def __delete__(self, instance):
+#          del self._name
 
 class propertyDescriptor(object):
-    """Descriptor object to access/modify class properties"""
     def __init__(self, default):
-        self._name = default
-
-    def __set__(self, instance, name_):
-        self._name = name_
+        self.default = default
+        self.data = WeakKeyDictionary()
 
     def __get__(self, instance, owner):
-        return self._name
+        #we get here when someone calls x.d, and d is a
+        #NonNegative instance.
+        #instance = x, owner = type(x)
+        return self.data.get(instance,self.default)
 
-    def __delete__(self, instance):
-         del self._name
+    def __set__(self, instance, value):
+        #we get here when someone calls x.d = val, and d is a
+        #NonNegative instance.
+        #instance = x, value = val
+        self.data[instance] = value
 
 
 class MarketBookResult(object):
@@ -38,6 +57,16 @@ class MarketBook(object):
     name = propertyDescriptor('')
     runners = propertyDescriptor([])
 
+    def computeSyntheticBack(self):
+        inverted = []
+        for runner in self.runners:
+            inverted.append(1/float(runner.availableToBack))
+        invertedSum = sum(inverted)
+        print("Sum of inverted Back Prices: " + str(invertedSum))
+        syntheticBack = float(1/invertedSum)
+        return syntheticBack
+
+
 
 
 class Runner(object):
@@ -47,3 +76,6 @@ class Runner(object):
     availableToBack = propertyDescriptor([])
     availableToLay = propertyDescriptor([])
     active = propertyDescriptor(False)
+
+    def __init__(self,name):
+        runnerName = name
