@@ -36,6 +36,19 @@ class propertyDescriptor(object):
 class MarketBookResult(object):
     """Collection of marketbooks."""
     marketBooks = propertyDescriptor([])
+    liquidity = {
+        'liquidMarket':'',
+        'illiquidMarket':''
+    }
+
+    def addIn(self, mbk):
+        self.marketBooks.append(mbk)
+        if (self.liquidity['liquidMarket']==''):
+            self.liquidity['liquidMarket']= mbk.name
+            mbk.liquidity = 'liquidMarket'
+        else:
+            self.liquidity['illiquidMarket'] = mbk.name
+            mbk.liquidity = 'illiquidMarket'
 
     def printBooks(self):
         print('Please find Best three available prices for the runners: ')
@@ -51,11 +64,17 @@ class MarketBookResult(object):
         return
 
 
+    def callArbitrage(self):
+        return
+
+
+
 class MarketBook(object):
     """Class representation of a marketbook, with built-in useful behaviors"""
     marketId = propertyDescriptor(0)
     name = propertyDescriptor('')
     runners = propertyDescriptor([])
+    liquidity = propertyDescriptor('')
 
     def computeSyntheticBack(self):
         inverted = []
@@ -83,6 +102,3 @@ class Runner(object):
     availableToBack = propertyDescriptor([])
     availableToLay = propertyDescriptor([])
     active = propertyDescriptor(False)
-
-    def __init__(self,name):
-        runnerName = name

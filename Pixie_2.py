@@ -203,7 +203,7 @@ class Pixie(object):
                         _runner.availableToLay = runner['ex']['availableToLay']
                         _runner.active = True   #else: active==False
                     _marketbook.runners.append(_runner)
-                mbr.marketBooks.append(_marketbook)
+                mbr.addIn(_marketbook)
             return mbr
 
 

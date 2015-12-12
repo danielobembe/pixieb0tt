@@ -4,12 +4,12 @@ import market_book_results
 from market_book_results import Runner
 from market_book_results import MarketBook
 
-one_zero = Runner(0)
-one_one = Runner(0)
-one_two = Runner(0)
-two_zero = Runner(0)
-two_one = Runner(0)
-three_zero = Runner(0)
+one_zero = Runner()
+one_one = Runner()
+one_two = Runner()
+two_zero = Runner()
+two_one = Runner()
+three_zero = Runner()
 
 one_zero.availableToBack = 6.6
 one_zero.availableToLay = 7.4
@@ -37,3 +37,17 @@ for runner in mbk.runners:
 print('\n')
 print("Synthetic Back: " + str(mbk.computeSyntheticBack()))
 print("Synthetic Lay: " + str(mbk.computeSyntheticLay()))
+
+print('\n')
+
+under_35 = Runner()
+under_35.availableToBack = 1.45
+under_35.availableToLay = 1.46
+under_35.runnerName = "Under 35 Goals"
+mbk_ = MarketBook()
+mbk_.runners = [under_35]
+for runner in mbk_.runners:
+    print (runner.runnerName + ' back price: '+ str(runner.availableToBack))
+print('\n')
+print("Synthetic Back: " + str(mbk_.computeSyntheticBack()))
+print("Synthetic Lay: " + str(mbk_.computeSyntheticLay()))
