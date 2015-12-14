@@ -1,0 +1,16 @@
+settings.host = 'api.smarkets.com'
+settings.port = 3801
+
+
+
+Using RestAPIClient ..NOtes:
+
+from smarkets import rest_api as rest_api
+client = rest_api.RestAPIClient()
+result = client.get_event_by_path('/sport/football')
+from Pixie_2 import Pixie
+pixy = Pixie()
+pixy.prettyPrint(result)
+    {{result == list of leagues and league-metadata}}
+(sub-node of results)
+scottishPremiership = client.get_event_by_path("/events/sport/football/scottish-premiership-2015-2016")
