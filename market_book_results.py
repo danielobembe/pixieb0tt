@@ -1,5 +1,5 @@
 from weakref import WeakKeyDictionary
-
+import json
 
 class propertyDescriptor(object):
     def __init__(self, default):
@@ -70,7 +70,7 @@ class MarketBookResult(object):
         illiquid = self.getIlliquidMarket()
         #print('Liquid Market: '+ liquid.name)
         #print('Illiquid Market: '+ illiquid.name)
-        liquidBack = liquid.computeSyntheticBack()
+        liquidBack = liquid.computeSyntheticBack()#<====
         liquidLay  = liquid.computeSyntheticLay()
         illiquidBack = illiquid.computeSyntheticBack()
         illiquidLay = illiquid.computeSyntheticLay()
@@ -80,7 +80,7 @@ class MarketBookResult(object):
         if (liquidLay <= illiquidBack):
             print('Arbitrage, profit: '+ (liquidLay - illiquidBack))
         if (liquidBack < illiquidLay or liquidLay > illiquidBack ):
-            print('No-Arb condition holding.')
+            print('No-Arb condition holding.') #<=======
         return
 
 
@@ -94,19 +94,27 @@ class MarketBook(object):
     def computeSyntheticBack(self):
         inverted = []
         for runner in self.runners:
-            inverted.append(1/float(runner.availableToBack))
+            #print("Name: "+ str(runner.runnerName) + " | Back-price: " + str(runner.availableToBack))
+            """would need to generalize to the entire returned marketprices (right now only computing on best Price)."""
+            inverted.append(1/float(runner.availableToBack[0]['price']))
+        #print("List of inverted Back Prices: " + str(inverted))
         invertedSum = sum(inverted)
-        print("Sum of inverted Back Prices: " + str(invertedSum))
+        #print("Sum of inverted Back Prices: " + str(invertedSum))
         syntheticBack = float(1/invertedSum)
+        #print("Price of synthetic Back: " + str(syntheticBack))
         return syntheticBack
 
     def computeSyntheticLay(self):
         inverted = []
         for runner in self.runners:
-            inverted.append(1/float(runner.availableToLay))
+            #print("Name: "+ str(runner.runnerName) + " | Back-price: " + str(runner.availableToLay))
+            """would need to generalize to the entire returned marketprices (right now only computing on best Price)."""
+            inverted.append(1/float(runner.availableToLay[0]['price']))
+        #print("List of inverted Lay Prices: " + str(inverted))
         invertedSum = sum(inverted)
-        print("Sum of inverted Lay Prices: " + str(invertedSum))
+        #print("Sum of inverted Lay Prices: " + str(invertedSum))
         syntheticLay = float(1/invertedSum)
+        #print("Price of synthetic Lay: " + str(syntheticLay))
         return syntheticLay
 
 
