@@ -241,20 +241,30 @@ class Pixie(object):
             eventMarkets = self.getMarkets(eventId) #returns all markets for a given event
             #self.prettyPrint(eventMarkets)
             over_unders = self.selectOverUnders(eventMarkets)
-            print('\nTesting Function: selectOverUnder()')
-            print("Over/Under x.5 markets")
-            self.prettyPrint(over_unders)
+            print('\nList of Over/Under x.5 markets: ')
+            for market in over_unders:
+                print(market["marketName"])
+            illiquidChoice = input("Select arbitrage-market from list: \n")
+            illiquidMarketId = self.selectMarkets(illiquidChoice, eventMarkets)
+            print("IlliquidMarketId: "+ str(illiquidMarketId))
+            liquidMarketId = self.selectMarkets('Correct Score', eventMarkets)
+            if (liquidMarketId == []):
+                print("Correct Score Market not available for this event. Please select another: ")
+                continue
+            else: print("Liquid Market Id: " + str(liquidMarketId))
+            #print(illiquidMarketId)
+            #self.prettyPrint(over_unders)
             # --------------- #
             #At this point we need to jump directly into selecting arb-choices
             # --------------- #
             #for market in eventMarkets:
             #    print(market["marketName"])
             #Instead of printing all markets. Filter eventmarkets and print only Over/Under markets"
-            illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
-            illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
+            #illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
+            #illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
             liquidChoices = input("Input liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
             liquidMarketIds = self.selectMarkets(liquidChoices, eventMarkets)
-            marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketIds)
+            marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketId)
             print("\nAcquired choice Ids: ")
             for each in marketIds:
                 print(each)
