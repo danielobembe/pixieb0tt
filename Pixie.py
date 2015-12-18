@@ -9,6 +9,7 @@ from betfair.api_ng import API
 from datetime import datetime, timedelta
 import json
 import urllib, urllib.request, urllib.error
+import market_book_results as m_b_r
 
 class Pixie(object):
     """betfair laying bot - lays the field using settings.py parameters"""
@@ -43,55 +44,6 @@ class Pixie(object):
             f.close()
             return data
         return default_object # return default object (empty)
-
-    def update_ignores(self, market_id = ''):
-        """update ignores list"""
-        if market_id:
-            # add market to ignores dict
-            if market_id not in self.ignores:
-                self.ignores.append(market_id)
-                self.pickle_data(self.ignores_path, self.ignores)
-        else:
-            # check for closed markets (once every 2 hours)
-            count = len(self.ignores)
-            now = time()
-            if count > 0 and now > self.throttle['update_closed']:
-                secs = 2 * 60 * 60 # 2 hours
-                self.throttle['update_closed'] = now + secs
-                msg = 'CHECKING %s MARKETS FOR CLOSED STATUS...' % count
-                self.logger.xprint(msg)
-                for i in range(0, count, 5):
-                    market_ids = self.ignores[i:i+5] # list of upto 5 market ids
-                    self.do_throttle()
-                    books = self.get_market_books(market_ids)
-                    for book in books:
-                        if book['status'] == 'CLOSED':
-                            # remove from ignores
-                            self.ignores.remove(book['marketId'])
-                            self.pickle_data(self.ignores_path, self.ignores)
-
-    def update_betcount(self, betcount = 0):
-        """update bet count to avoid exceeding 1000 bets per hour"""
-        hour = datetime.utcnow().hour
-        if hour not in self.betcount:
-            # new hour
-            self.betcount[hour] = [betcount]
-            # remove 'old' keys
-            for key in self.betcount:
-                if key != hour: self.betcount.pop(key)
-        else:
-            # current hour
-            self.betcount[hour].append(betcount)
-        # pickle
-        self.pickle_data(self.betcount_path, self.betcount)
-
-    def get_betcount(self):
-        """returns bet count for current hour as integer"""
-        betcount = 0
-        hour = datetime.utcnow().hour
-        if hour in self.betcount:
-            betcount = sum(self.betcount[hour])
-        return betcount
 
     def do_throttle(self):
         """return when it's safe to continue"""
@@ -130,191 +82,96 @@ class Pixie(object):
                 msg = 'api.keep_alive() resp = %s' % resp
                 raise Exception(msg)
 
-    def get_markets(self, market_ids = None):
-        """returns a list of markets
-        @market_ids: type = list. list of market ids to get info for.
-        HINT: market ids can be filtered from menu paths
-        """
-        if market_ids:
-            params = {
-                'filter': {
-                    'marketTypeCodes': settings.market_types,
-                    'marketBettingTypes': ['ODDS'],
-                    'turnInPlayEnabled': True, # will go in-play
-                    'inPlayOnly': False, # market NOT currently in-play
-                    'marketIds': market_ids
-                },
-                'marketProjection': ['RUNNER_DESCRIPTION'],
-                'maxResults': 1000, # maximum allowed by betfair
-                'sort': 'FIRST_TO_START'
-            }
-            # send the request
-            markets = self.api.get_markets(params)
-            if type(markets) is list:
-                return markets
-            else:
-                msg = 'api.get_markets() resp = %s' % markets
-                raise Exception(msg)
-
-    def create_bets(self, markets = None, market_paths = None):
-        """returns a dict of bets. keys = market ids, vals = list of bets"""
-        market_bets = {}
-        # loop through markets
-        for market in markets:
-            # get bet settings for this market
-            market_id = market['marketId']
-            if market_id in market_paths:
-                bets_index = market_paths[market_id]['bets_index']
-                bets = settings.market_bets[bets_index]
-                # create bets for this market
-                market_path = market_paths[market_id]['market_path']
-                market_bets[market_id] = {'bets': [], 'market_path': market_path}
-                for runner in market['runners']:
-                    for bet in bets:
-                        new_bet = {}
-                        new_bet['selectionId'] = runner['selectionId']
-                        new_bet['side'] = bet['side']
-                        new_bet['orderType'] = 'LIMIT'
-                        new_bet['limitOrder'] = {
-                            'size': bet['stake'],
-                            'price': bet['price'],
-                            'persistenceType': 'PERSIST' # KEEP at in-play. Set as 'LAPSE' to cancel.
-                        }
-                        market_bets[market_id]['bets'].append(new_bet)
-        return market_bets # max bet count = 1000
-
-    def place_bets(self, market_bets = None):
-        """loop through markets and place bets
-        @market_bets: type = dict returned from create_bets()
-        NOTE: market_bets will contain up to 1000 bets!
-        """
-        for market_id in market_bets:
-            bets = market_bets[market_id]['bets']
-            if bets:
-                # update & check bet count
-                new_betcount = len(bets)
-                self.update_betcount(new_betcount)
-                betcount = self.get_betcount() # total bets placed in current hour
-                if betcount >= settings.max_transactions: return
-                # place bets...
-                market_path = market_bets[market_id]['market_path']
-                msg = 'MARKET PATH: %s\n' % market_path
-                msg += 'PLACING %s BETS...\n' % len(bets)
-                for i, bet in enumerate(bets):
-                    msg += '%s: %s\n' % (i, bet)
-                self.logger.xprint(msg)
-                self.do_throttle()
-                resp = self.api.place_bets(market_id, bets)
-                if (type(resp) is dict
-                    and 'status' in resp
-                    ):
-                    if resp['status'] == 'SUCCESS':
-                        # add to ignores
-                        self.update_ignores(market_id)
-                        msg = 'PLACE BETS: SUCCESS'
-                        self.logger.xprint(msg)
-                    else:
-                        if resp['errorCode'] == 'INSUFFICIENT_FUNDS':
-                            msg = 'PLACE BETS: FAIL (%s)' % resp['errorCode']
-                            self.logger.xprint(msg)
-                            sleep(180) # wait 3 minutes
-                        else:
-                            msg = 'PLACE BETS: FAIL (%s)' % resp['errorCode']
-                            self.logger.xprint(msg, True) # do not raise error - allow bot to continue
-                            # add to ignores
-                            self.update_ignores(market_id)
-                else:
-                    msg = 'PLACE BETS: FAIL\n%s' % resp
-                    raise Exception(msg)
-
-    def filter_menu_path(self, menu_paths = None):
-        """returns list of paths matching filters specified in settings.py
-        @menu_paths: dict of menu paths. keys = market ids, vals = menu paths
-        """
-        keepers = {}
-        # loop through all menu paths
-        for market_id in menu_paths:
-            market_path = menu_paths[market_id]
-            path_texts = market_path.split('/')
-            # check filters
-            for filter_index, filter in enumerate(settings.menu_filters):
-                # check if ALL search text matches this market
-                matched_all = False
-                for text in filter:
-                    if text in path_texts:
-                        matched_all = True
-                    else:
-                        matched_all = False
-                        break
-                # keep this market?
-                if matched_all:
-                    keepers[market_id] = {
-                        'bets_index': filter_index,
-                        'market_path': market_path
-                    }
-        return keepers
-
-                        #My-addition
+    #funct: print json dicts in a readable format
     def prettyPrint(self, json_dict):
         print(json.dumps(json_dict,sort_keys=True,indent=4,separators=(',',': ')))
 
-    def callAping(self, jsonrpc_req): #need to abstract later
-        try:
-            req = urllib.request.Request("https://api.betfair.com/exchange/betting/json-rpc/v1",
-                                        jsonrpc_req.encode('utf-8'),
-                                        headers = {'X-Application':self.api.app_key ,
-                                        'X-Authentication':self.api.session_token,
-                                        'content-type': 'application/json'})
-            response = urllib.request.urlopen(req)
-            jsonResponse = response.read()
-            return jsonResponse.decode('utf-8')
-        except urllib.error.URLError as e:
-            print (e.reason)
-            print ('Oops no service available at ' + str(url))
-            exit()
-        except urllib.error.HTTPError:
-            print ('Oops not a valid operation from the service ' + str(url))
-            exit()
+    #Function: Prompts user to select from a list of EventTypes (i.e Soccer, Golf, ...)
+    #that was pulled down from Betfair site. Converts selection into, and returns id of
+    #EventType as "eventTypeId"
+    def selectEventType(self):
+        eventTypes = self.api.get_event_types()
+        print('Here are the types of events available: ')
+        for eventType in eventTypes:
+            eventTypeName = eventType['eventType']['name']
+            print(eventTypeName)
+        eventTypeChoice = input('Please input an option from the above list: ')
+        eventTypeId = None
+        for eventType in eventTypes:
+            eventTypeName = eventType['eventType']['name']
+            if (eventTypeName == eventTypeChoice):
+                eventTypeId = eventType['eventType']['id']
+            else: continue
+            #print(eventTypeId)
+            return eventTypeId
 
-    def getMarketCatalogue(self, eventTypeID, marketName):
-        #Note: a market catalogue gives all the outcomes for "sale" in a market
-        if (eventTypeID is not None):
-            print ('Calling listMarketCatalouge Operation to get MarketID and selectionId')
-            now = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
-            market_catalogue_req = '{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listMarketCatalogue", "params": {"filter":{"eventTypeIds":["' + eventTypeID + '"],"marketCountries":["GB"],"marketTypeCodes":["'+marketName+ '"],'\
-                                                                                                                                                                 '"marketStartTime":{"from":"' + now + '"}},"sort":"FIRST_TO_START","maxResults":"1","marketProjection":["RUNNER_METADATA"]}, "id": 1}'
-            market_catalogue_response = self.callAping(market_catalogue_req)
-            market_catalogue_loads = json.loads(market_catalogue_response)
-            try:
-                market_catalogue_results = market_catalogue_loads['result']
-                return market_catalogue_results
-            except:
-                print ('Exception from API-NG' + str(market_catalogue_results['error']))
-                exit()
+    #Function: Prompts user to select from a list of events e.g ('Man-U vs Arsenal').
+    #Converts selection into eventID.
+    def selectEvent(self, eventTypeId):
+        filter = {'eventTypeIds':[eventTypeId]}
+        events = self.api.get_events(filter)
+        print('\n\nEVENTS ON OFFER:')
+        for event in events:
+            eventName = event["event"]["name"]
+            print(eventName)
+        eventChoice = input('Please input an option from the above list: ')
+        eventId = None
+        for event in events:
+            eventName = event["event"]["name"]
+            if (eventName == eventChoice):
+                eventId = event["event"]["id"]
+            else: continue
+            #print(eventId)
+            return eventId
+        #self.prettyPrint(events)
 
-    def getMarketId(self, marketCatalogueResult):
-        if( marketCatalogueResult is not None):
-            for market in marketCatalogueResult:
-                return market['marketId']
+    #funct: shows markets on offer for event representd by eventId
+    def getMarkets(self, eventId):
+        filter = {'eventIds':[eventId]}
+        params = { 'filter':filter,
+                   'marketProjection':['RUNNER_METADATA','RUNNER_DESCRIPTION'],
+                   'maxResults': 50 }
+        markets = self.api.get_markets(params)
+        #self.prettyPrint(markets)
+        return markets
 
-    def getSelectionId(self, marketCatalogueResult):
-        #NEED to modify so user can select (multiple) runners?
-        if(marketCatalogueResult is not None):
-            for market in marketCatalogueResult:
-                return market['runners'][0]['selectionId']
 
-    def getMarketBookBestOffers(self, marketId):
-        print ('Calling listMarketBook to read prices for the Market with ID :' + marketId)
-        market_book_req = '{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listMarketBook", "params": {"marketIds":["' + marketId + '"],"priceProjection":{"priceData":["EX_BEST_OFFERS"]}}, "id": 1}'
-        market_book_response = self.callAping(market_book_req)
-        market_book_loads = json.loads(market_book_response)
-        try:
-            market_book_result = market_book_loads['result']
-            #self.prettyPrint(market_book_result)
-            return market_book_result
-        except:
-            print ('Exception from API-NG' + str(market_book_result['error']))
-            exit()
+    def selectOverUnders(self, eventMarkets):
+        over_under_markets = []
+        for market in eventMarkets:
+            marketName = market['marketName']
+            print(marketName)
+            marketNameToList = marketName.split(' ')
+            if(marketNameToList[0]=="Over/Under"):
+                over_under_markets.append(market)
+        return over_under_markets
+
+
+    #funct: return marketIds for a selected set of markets
+    def selectMarkets(self, choices, eventMarkets):
+        liquidMarkets = map(str,choices.split(',') )
+        liquidMarketIds = []
+        for market in liquidMarkets:
+            for eventMarket in eventMarkets:
+                if (market == eventMarket['marketName']):
+                    liquidMarketIds.append(eventMarket['marketId'])
+        return liquidMarketIds
+
+    #combine 2 sets of marketIds into 1 which is suitable for passing to api call
+    def combineMarkets(self,liquidSet, illiquidSet):
+        marketSet = []
+        for each in liquidSet:
+            marketSet.append(each)
+        for each in illiquidSet:
+            marketSet.append(each)
+        return marketSet
+
+
+    def getMarketPrices(self, marketIds):
+        marketBook = self.api.get_market_books(market_ids=marketIds,price_data=['EX_BEST_OFFERS'])
+        #self.prettyPrint(marketBook)
+        return marketBook
+
 
     def printPrices(self, market_book_result):
         if(market_book_result is not None):
@@ -328,6 +185,44 @@ class Pixie(object):
                         print ('Available to lay price :' + str(runner['ex']['availableToLay']))
                     else:
                         print ('This runner is not active')
+                print("****"*10)
+
+    def printPrices_2(self, market_book_result):
+        if(market_book_result is not None):
+            self.prettyPrint(market_book_result)
+
+
+    def encapsulatePrices(self, market_book_result, eventMarkets):
+        if(market_book_result is not None):
+            mbr = m_b_r.MarketBookResult()             #create new marketBookResult object
+            for marketBook in market_book_result:
+                _marketbook = m_b_r.MarketBook()       #create new marketBook object
+                marketId = marketBook["marketId"]
+                marketName = None
+                for market in eventMarkets:
+                    if(marketId == market["marketId"]):
+                        marketName = market["marketName"]
+                _marketbook.name = marketName         #marketBook.name = marketName
+                _marketbook.marketId = marketId       #marketBook.marketId = marketId
+                runners = marketBook['runners']
+                for runner in runners:
+                    _runner = m_b_r.Runner()          #create new Runner object
+                    selectionId = runner["selectionId"]
+                    runnerName = None
+                    for market in eventMarkets:
+                        for run in market["runners"]:
+                            if(run['selectionId']==selectionId):
+                                runnerName = run["runnerName"]
+                    _runner.runnerName = runnerName   #Runner.runnerName = runnerName
+                    _runner.selectionId = selectionId #Runner.selectionId = selectionId
+                    if (runner['status'] == 'ACTIVE'):
+                        _runner.availableToBack = runner['ex']['availableToBack']
+                        _runner.availableToLay = runner['ex']['availableToLay']
+                        _runner.active = True   #else: active==False
+                    _marketbook.runners.append(_runner)
+                mbr.addIn(_marketbook)
+            return mbr
+
 
     def run(self, username = '', password = '', app_key = '', aus = False):
         # create the API object
@@ -341,51 +236,86 @@ class Pixie(object):
         while self.session:
             self.do_throttle()
             self.keep_alive()
-            #Get and display all events
-            eventsList = self.api.get_event_types()
+            eventTypeId = self.selectEventType()    #e.g returns 1 for Soccer
+            eventId = self.selectEvent(eventTypeId) #e.g return 27632951 for Lucena CF v Coria CF
+            eventMarkets = self.getMarkets(eventId) #returns all markets for a given event
+            #self.prettyPrint(eventMarkets)
+            over_unders = self.selectOverUnders(eventMarkets)
+            print('\nTesting Function: selectOverUnder()')
+            print("Over/Under x.5 markets")
+            self.prettyPrint(over_unders)
+            # --------------- #
+            #At this point we need to jump directly into selecting arb-choices
+            # --------------- #
+            #for market in eventMarkets:
+            #    print(market["marketName"])
+            #Instead of printing all markets. Filter eventmarkets and print only Over/Under markets"
+            illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
+            illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
+            liquidChoices = input("Input liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
+            liquidMarketIds = self.selectMarkets(liquidChoices, eventMarkets)
+            marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketIds)
+            print("\nAcquired choice Ids: ")
+            for each in marketIds:
+                print(each)
+            lockIn = True
+            while lockIn:
+                marketBooks = self.getMarketPrices(marketIds) #returns array of marketbooks for each selected market
+                #self.prettyPrint(marketBooks)
+                #self.printPrices(marketBooks)
+                encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
+                #encapsulatedBook.printBooks()
+                encapsulatedBook.callArbitrage()
+                #lockIn = False
+            #self.session = False
+        if not self.session:
+            msg = 'SESSION TIMEOUT'
+            print(msg)
+            #raise Exception(msg)
 
-            ###user interaction
-            #print(json.dumps(eventsList,sort_keys=True,indent=4,separators=(',',': ')))
-            print('Here are the list of available events: ')
-            for event in eventsList:
-                eventName = event['eventType']['name']
-                print(eventName) #eg: Soccer
-            eventChoice = input('Please input an option from the above list: ')
+    ##############################################
+    #Correct Score Arbitrage Functions:
+    def correctScoreArbitrage(eventMarkets):
+        liquidMarkets = self.selectMarkets('Correct Score', eventMarkets)
 
-            ###Get Id of selected event
-            eventId = None
-            for event in eventsList:
-                eventName = event['eventType']['name']
-                eventId = None
-                if (eventName == eventChoice):
-                    eventId = event['eventType']['id']
-                else: continue
-                break
+    ###############################################
 
-            ###Display all markets for selected event
-            eventMarkets = self.api.get_market_types({'eventTypeIds':[eventId]})
+
+
+    def soccer_run(self, username = '', password = '', app_key = '', aus = False):
+        self.username = username
+        self.api = API(aus, ssl_prefix = username)
+        self.api.app_key = app_key
+        self.logger = Logger(aus)
+        self.logger.bot_version = __version__
+        # login to betfair api-ng
+        self.do_login(username, password)
+        while self.session:
+            self.do_throttle()
+            self.keep_alive()
+            eventTypeId = 1          #Soccer
+            eventId = self.selectEvent(eventTypeId)
+            eventMarkets = self.showMarkets(eventId) #returns all markets for a given event
             for market in eventMarkets:
-                print(market["marketType"]) #eg: OVER_UNDER_15
-            marketChoice = input("Please select from the list of available Markets below: ")
-            print("You selected "+ marketChoice)
-            ###Get market-catalogue for user selected event
-            marketCatalogue = self.getMarketCatalogue(eventId,marketChoice)
-            print("This is the list of runners to bet on in the "+marketChoice+" market:")
-            for runner in marketCatalogue[0]["runners"]:
-                print(runner["runnerName"]) #eg: Under 1.5 goals
-
-            ###Get market and selection (i.e runner) ids
-            #self.prettyPrint(marketCatalogue)
-            market_id = self.getMarketId(marketCatalogue)
-            print("Market " + marketChoice + " has id: " + market_id)
-            selection_id = self.getSelectionId(marketCatalogue)
-            print("selction_id: " + str(selection_id))
-
-            ###Get Market Book - best offers only
-            marketBook = self.getMarketBookBestOffers(market_id)
-            self.printPrices(marketBook)
-            #sign_out?
-            self.session = False
+                print(market["marketName"])
+            liquidMarkets = self.selectMarkets('Correct Score', eventMarkets)
+            print("Correct Score market has been set as Liquid market. Select Choice of Over-Under:\n")
+            illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
+            illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
+            marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketIds)
+            print("\nAcquired choice Ids: ")
+            for each in marketIds:
+                print(each)
+            lockIn = True
+            while lockIn:
+                marketBooks = self.getMarketPrices(marketIds) #returns array of marketbooks for each selected market
+                #self.prettyPrint(marketBooks)
+                #self.printPrices(marketBooks)
+                encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
+                #encapsulatedBook.printBooks()
+                encapsulatedBook.callArbitrage()
+                #lockIn = False
+            #self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
             print(msg)

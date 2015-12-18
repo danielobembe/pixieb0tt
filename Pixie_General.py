@@ -1,5 +1,6 @@
 __version__ = 0.01
 
+#General version of pixy. Other version being tailored to focus on soccer#
 import os
 import pickle
 import settings
@@ -86,7 +87,9 @@ class Pixie(object):
     def prettyPrint(self, json_dict):
         print(json.dumps(json_dict,sort_keys=True,indent=4,separators=(',',': ')))
 
-    #funct: asks for eventType and returns eventType's id
+    #Function: Prompts user to select from a list of EventTypes (i.e Soccer, Golf, ...)
+    #that was pulled down from Betfair site. Converts selection into, and returns id of
+    #EventType as "eventTypeId"
     def selectEventType(self):
         eventTypes = self.api.get_event_types()
         print('Here are the types of events available: ')
@@ -100,9 +103,11 @@ class Pixie(object):
             if (eventTypeName == eventTypeChoice):
                 eventTypeId = eventType['eventType']['id']
             else: continue
+            #print(eventTypeId)
             return eventTypeId
 
-    #funct: asks for events (given a particular eventType), and returns event id
+    #Function: Prompts user to select from a list of events e.g ('Man-U vs Arsenal').
+    #Converts selection into eventID.
     def selectEvent(self, eventTypeId):
         filter = {'eventTypeIds':[eventTypeId]}
         events = self.api.get_events(filter)
@@ -117,11 +122,12 @@ class Pixie(object):
             if (eventName == eventChoice):
                 eventId = event["event"]["id"]
             else: continue
+            #print(eventId)
             return eventId
         #self.prettyPrint(events)
 
     #funct: shows markets on offer for event representd by eventId
-    def showMarkets(self, eventId):
+    def getMarkets(self, eventId):
         filter = {'eventIds':[eventId]}
         params = { 'filter':filter,
                    'marketProjection':['RUNNER_METADATA','RUNNER_DESCRIPTION'],
@@ -129,6 +135,7 @@ class Pixie(object):
         markets = self.api.get_markets(params)
         #self.prettyPrint(markets)
         return markets
+
 
     #funct: return marketIds for a selected set of markets
     def selectMarkets(self, choices, eventMarkets):
@@ -219,13 +226,65 @@ class Pixie(object):
         while self.session:
             self.do_throttle()
             self.keep_alive()
-            eventTypeId = self.selectEventType()
-            eventId = self.selectEvent(eventTypeId)
-            eventMarkets = self.showMarkets(eventId) #returns all markets for a given event
+            eventTypeId = self.selectEventType()    #e.g returns 1 for Soccer
+            eventId = self.selectEvent(eventTypeId) #e.g return 27632951 for Lucena CF v Coria CF
+            eventMarkets = self.getMarkets(eventId) #returns all markets for a given event
+            #self.prettyPrint(eventMarkets)
+            # --------------- #
+            #At this point we need to jump directly into selecting arb-choices
+            # --------------- #
             for market in eventMarkets:
                 print(market["marketName"])
             liquidChoices = input("Input liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
             liquidMarketIds = self.selectMarkets(liquidChoices, eventMarkets)
+            illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
+            illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
+            marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketIds)
+            print("\nAcquired choice Ids: ")
+            for each in marketIds:
+                print(each)
+            lockIn = True
+            while lockIn:
+                marketBooks = self.getMarketPrices(marketIds) #returns array of marketbooks for each selected market
+                #self.prettyPrint(marketBooks)
+                #self.printPrices(marketBooks)
+                encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
+                #encapsulatedBook.printBooks()
+                encapsulatedBook.callArbitrage()
+                #lockIn = False
+            #self.session = False
+        if not self.session:
+            msg = 'SESSION TIMEOUT'
+            print(msg)
+            #raise Exception(msg)
+
+    ##############################################
+    #Correct Score Arbitrage Functions:
+    def correctScoreArbitrage(eventMarkets):
+        liquidMarkets = self.selectMarkets('Correct Score', eventMarkets)
+
+    ###############################################
+
+
+
+    def soccer_run(self, username = '', password = '', app_key = '', aus = False):
+        self.username = username
+        self.api = API(aus, ssl_prefix = username)
+        self.api.app_key = app_key
+        self.logger = Logger(aus)
+        self.logger.bot_version = __version__
+        # login to betfair api-ng
+        self.do_login(username, password)
+        while self.session:
+            self.do_throttle()
+            self.keep_alive()
+            eventTypeId = 1          #Soccer
+            eventId = self.selectEvent(eventTypeId)
+            eventMarkets = self.showMarkets(eventId) #returns all markets for a given event
+            for market in eventMarkets:
+                print(market["marketName"])
+            liquidMarkets = self.selectMarkets('Correct Score', eventMarkets)
+            print("Correct Score market has been set as Liquid market. Select Choice of Over-Under:\n")
             illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
             illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
             marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketIds)

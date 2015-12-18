@@ -18,12 +18,13 @@ EXIT_ON_ERROR = True # set to False when bot is ready to run 24/7
 
 while True: # loop forever
     try:
-        from Pixie_2 import Pixie
+        from Pixie import Pixie
         from logger import Logger
         log = Logger(AUS)
         log.xprint('STARTING BOT...')
         # start bot
         pixiebot = Pixie()
+        #pixiebot.run(USERNAME, PASSWORD, APP_KEY, AUS)
         pixiebot.run(USERNAME, PASSWORD, APP_KEY, AUS)
     except Exception as exc:
         from logger import Logger
