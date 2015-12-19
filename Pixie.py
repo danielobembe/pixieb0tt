@@ -140,7 +140,7 @@ class Pixie(object):
         over_under_markets = []
         for market in eventMarkets:
             marketName = market['marketName']
-            print(marketName)
+            #print(marketName)
             marketNameToList = marketName.split(' ')
             if(marketNameToList[0]=="Over/Under"):
                 over_under_markets.append(market)
@@ -193,35 +193,36 @@ class Pixie(object):
 
 
     def encapsulatePrices(self, market_book_result, eventMarkets):
-        if(market_book_result is not None):
-            mbr = m_b_r.MarketBookResult()             #create new marketBookResult object
-            for marketBook in market_book_result:
-                _marketbook = m_b_r.MarketBook()       #create new marketBook object
-                marketId = marketBook["marketId"]
-                marketName = None
+        #if(market_book_result is not None):
+        mbr = m_b_r.MarketBookResult()             #create new marketBookResult object
+        for marketBook in market_book_result:
+            _marketbook = m_b_r.MarketBook()       #create new marketBook object
+            marketId = marketBook["marketId"]
+            marketName = None
+            for market in eventMarkets:
+                if(marketId == market["marketId"]):
+                    marketName = market["marketName"]
+            _marketbook.name = marketName         #marketBook.name = marketName
+            #print(marketName)
+            _marketbook.marketId = marketId       #marketBook.marketId = marketId
+            runners = marketBook['runners']
+            for runner in runners:
+                _runner = m_b_r.Runner()          #create new Runner object
+                selectionId = runner["selectionId"]
+                runnerName = None
                 for market in eventMarkets:
-                    if(marketId == market["marketId"]):
-                        marketName = market["marketName"]
-                _marketbook.name = marketName         #marketBook.name = marketName
-                _marketbook.marketId = marketId       #marketBook.marketId = marketId
-                runners = marketBook['runners']
-                for runner in runners:
-                    _runner = m_b_r.Runner()          #create new Runner object
-                    selectionId = runner["selectionId"]
-                    runnerName = None
-                    for market in eventMarkets:
-                        for run in market["runners"]:
-                            if(run['selectionId']==selectionId):
-                                runnerName = run["runnerName"]
-                    _runner.runnerName = runnerName   #Runner.runnerName = runnerName
-                    _runner.selectionId = selectionId #Runner.selectionId = selectionId
-                    if (runner['status'] == 'ACTIVE'):
-                        _runner.availableToBack = runner['ex']['availableToBack']
-                        _runner.availableToLay = runner['ex']['availableToLay']
-                        _runner.active = True   #else: active==False
-                    _marketbook.runners.append(_runner)
-                mbr.addIn(_marketbook)
-            return mbr
+                    for run in market["runners"]:
+                        if(run['selectionId']==selectionId):
+                            runnerName = run["runnerName"]
+                _runner.runnerName = runnerName   #Runner.runnerName = runnerName
+                _runner.selectionId = selectionId #Runner.selectionId = selectionId
+                if (runner['status'] == 'ACTIVE'):
+                    _runner.availableToBack = runner['ex']['availableToBack']
+                    _runner.availableToLay = runner['ex']['availableToLay']
+                    _runner.active = True   #else: active==False
+                _marketbook.runners.append(_runner)
+            mbr.addIn(_marketbook)
+        return mbr
 
 
     def run(self, username = '', password = '', app_key = '', aus = False):
@@ -236,36 +237,36 @@ class Pixie(object):
         while self.session:
             self.do_throttle()
             self.keep_alive()
-            eventTypeId = self.selectEventType()    #e.g returns 1 for Soccer
-            eventId = self.selectEvent(eventTypeId) #e.g return 27632951 for Lucena CF v Coria CF
-            eventMarkets = self.getMarkets(eventId) #returns all markets for a given event
+            eventTypeId = self.selectEventType()    #e.g select Sport
+            eventId = self.selectEvent(eventTypeId) #e.g select Match
+            eventMarkets = self.getMarkets(eventId) #all markets for selected Match
             #self.prettyPrint(eventMarkets)
-            over_unders = self.selectOverUnders(eventMarkets)
+            over_unders = self.selectOverUnders(eventMarkets) #subset of eventMarkets i.e only Over/Under x.5's
             print('\nList of Over/Under x.5 markets: ')
             for market in over_unders:
-                print(market["marketName"])
+                print(market["marketName"])         #print list of available Over/Under x.5's
             illiquidChoice = input("Select arbitrage-market from list: \n")
-            illiquidMarketId = self.selectMarkets(illiquidChoice, eventMarkets)
-            print("IlliquidMarketId: "+ str(illiquidMarketId))
-            liquidMarketId = self.selectMarkets('Correct Score', eventMarkets)
+            illiquidMarketId = self.selectMarkets(illiquidChoice, eventMarkets) #select appropriate x.5 market
+            #print("IlliquidMarketId: "+ str(illiquidMarketId))
+            liquidMarketId = self.selectMarkets('Correct Score', eventMarkets)  #Correct Score market, automatically selected
             if (liquidMarketId == []):
                 print("Correct Score Market not available for this event. Please select another: ")
                 continue
-            else: print("Liquid Market Id: " + str(liquidMarketId))
+            #else: print("Liquid Market Id: " + str(liquidMarketId))
             marketIds = self.combineMarkets(liquidMarketId, illiquidMarketId)
-            print("\nAcquired choice Ids: ")
-            for each in marketIds:
-                print(each)
+            # print("\nAcquired choice Ids: ")
+            # for each in marketIds:
+            #     print(each)
             lockIn = True
             while lockIn:
-                marketBooks = self.getMarketPrices(marketIds) #returns array of marketbooks for each selected market
+                marketBooks = self.getMarketPrices(marketIds) #returns marketbooks for selected markets
                 #self.prettyPrint(marketBooks)
                 #self.printPrices(marketBooks)
                 encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
-                self.prettyPrint(encapsulatedBook.printBooks())
+                encapsulatedBook.printBooks()
                 #encapsulatedBook.callArbitrage()
                 lockIn = False
-            #self.session = False
+            self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
             print(msg)

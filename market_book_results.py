@@ -36,19 +36,29 @@ class MarketBookResult(object):
             self.liquidity['illiquidMarket'] = mbk.name
             mbk.liquidity = 'illiquidMarket'
 
-    def printBooks(self):
-        print('Please find Best three available prices for the runners: ')
-        for marketBook in self.marketBooks:
-            print(("===="* 5)+"Market Name: " + marketBook.name + ("===="* 5))  #Print market
-            for runner in marketBook.runners:
-                print("Runner Name:   | "+runner.runnerName+" | ...: "+ marketBook.name )
-        #         if (runner.active == True):
-        #             print ('Available to back price :' + str(runner.availableToBack))
-        #             print ('Available to lay price :' + str(runner.availableToLay))
-        #         else:
-        #             print ('This runner is not active')
-        # return
+    # def printBooks(self):
+    #     print('Please find Best three available prices for the runners: ')
+    #     for marketBook in self.marketBooks:
+    #         print(("===="* 5)+"Market Name: " + marketBook.name + ("===="* 5))  #Print market
+    #         for runner in marketBook.runners:
+    #             print("Runner Name:   | "+runner.runnerName+" | ...: "+ marketBook.name )
+    #             if (runner.active == True):
+    #                 print ('Available to back price :' + str(runner.availableToBack))
+    #                 print ('Available to lay price :' + str(runner.availableToLay))
+    #             else:
+    #                 print ('This runner is not active')
+    #     return
 
+    def printBooks(self):
+        print('\n')
+        for marketBook in self.marketBooks:
+            print("===" * 5)
+            print(marketBook.name)
+            for runner in marketBook.runners:
+                print("Runner Name: "+ runner.runnerName)
+                #THis has indicated very clearly
+                #that encapsulatedBook is faulty.
+        print("==="*5)
 
     def getLiquidMarket(self):
         liquid = None
