@@ -252,19 +252,7 @@ class Pixie(object):
                 print("Correct Score Market not available for this event. Please select another: ")
                 continue
             else: print("Liquid Market Id: " + str(liquidMarketId))
-            #print(illiquidMarketId)
-            #self.prettyPrint(over_unders)
-            # --------------- #
-            #At this point we need to jump directly into selecting arb-choices
-            # --------------- #
-            #for market in eventMarkets:
-            #    print(market["marketName"])
-            #Instead of printing all markets. Filter eventmarkets and print only Over/Under markets"
-            #illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
-            #illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
-            liquidChoices = input("Input liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
-            liquidMarketIds = self.selectMarkets(liquidChoices, eventMarkets)
-            marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketId)
+            marketIds = self.combineMarkets(liquidMarketId, illiquidMarketId)
             print("\nAcquired choice Ids: ")
             for each in marketIds:
                 print(each)
@@ -274,57 +262,9 @@ class Pixie(object):
                 #self.prettyPrint(marketBooks)
                 #self.printPrices(marketBooks)
                 encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
-                #encapsulatedBook.printBooks()
-                encapsulatedBook.callArbitrage()
-                #lockIn = False
-            #self.session = False
-        if not self.session:
-            msg = 'SESSION TIMEOUT'
-            print(msg)
-            #raise Exception(msg)
-
-    ##############################################
-    #Correct Score Arbitrage Functions:
-    def correctScoreArbitrage(eventMarkets):
-        liquidMarkets = self.selectMarkets('Correct Score', eventMarkets)
-
-    ###############################################
-
-
-
-    def soccer_run(self, username = '', password = '', app_key = '', aus = False):
-        self.username = username
-        self.api = API(aus, ssl_prefix = username)
-        self.api.app_key = app_key
-        self.logger = Logger(aus)
-        self.logger.bot_version = __version__
-        # login to betfair api-ng
-        self.do_login(username, password)
-        while self.session:
-            self.do_throttle()
-            self.keep_alive()
-            eventTypeId = 1          #Soccer
-            eventId = self.selectEvent(eventTypeId)
-            eventMarkets = self.showMarkets(eventId) #returns all markets for a given event
-            for market in eventMarkets:
-                print(market["marketName"])
-            liquidMarkets = self.selectMarkets('Correct Score', eventMarkets)
-            print("Correct Score market has been set as Liquid market. Select Choice of Over-Under:\n")
-            illiquidChoices = input("Input Non-liquid markets. Note: max = 2. Separate using ',' and no spaces between choices:\n")
-            illiquidMarketIds = self.selectMarkets(illiquidChoices, eventMarkets)
-            marketIds = self.combineMarkets(liquidMarketIds, illiquidMarketIds)
-            print("\nAcquired choice Ids: ")
-            for each in marketIds:
-                print(each)
-            lockIn = True
-            while lockIn:
-                marketBooks = self.getMarketPrices(marketIds) #returns array of marketbooks for each selected market
-                #self.prettyPrint(marketBooks)
-                #self.printPrices(marketBooks)
-                encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
-                #encapsulatedBook.printBooks()
-                encapsulatedBook.callArbitrage()
-                #lockIn = False
+                self.prettyPrint(encapsulatedBook.printBooks())
+                #encapsulatedBook.callArbitrage()
+                lockIn = False
             #self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'

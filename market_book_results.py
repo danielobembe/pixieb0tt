@@ -41,13 +41,13 @@ class MarketBookResult(object):
         for marketBook in self.marketBooks:
             print(("===="* 5)+"Market Name: " + marketBook.name + ("===="* 5))  #Print market
             for runner in marketBook.runners:
-                print("Runner Name:   | "+runner.runnerName+" |")
-                if (runner.active == True):
-                    print ('Available to back price :' + str(runner.availableToBack))
-                    print ('Available to lay price :' + str(runner.availableToLay))
-                else:
-                    print ('This runner is not active')
-        return
+                print("Runner Name:   | "+runner.runnerName+" | ...: "+ marketBook.name )
+        #         if (runner.active == True):
+        #             print ('Available to back price :' + str(runner.availableToBack))
+        #             print ('Available to lay price :' + str(runner.availableToLay))
+        #         else:
+        #             print ('This runner is not active')
+        # return
 
 
     def getLiquidMarket(self):
