@@ -58,6 +58,7 @@ class MarketBookResult(object):
                 print("Runner Name: "+ runner.runnerName)
                 #THis has indicated very clearly
                 #that encapsulatedBook is faulty.
+                #TODO: rewrite encapsulatePrices.
         print("==="*5)
 
     def getLiquidMarket(self):

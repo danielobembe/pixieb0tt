@@ -9,7 +9,7 @@ from betfair.api_ng import API
 from datetime import datetime, timedelta
 import json
 import urllib, urllib.request, urllib.error
-import market_book_results as m_b_r
+import market_book_results
 
 class Pixie(object):
     """betfair laying bot - lays the field using settings.py parameters"""
@@ -223,6 +223,12 @@ class Pixie(object):
                 _marketbook.runners.append(_runner)
             mbr.addIn(_marketbook)
         return mbr
+
+    def encapsulatePrices(self, marketBooks, eventMarkets):
+        _marketBooks = market_book_results.MarketBookResult()
+        for marketBook in marketBooks:
+            _marketBook = market_book_results.MarketBook()
+
 
 
     def run(self, username = '', password = '', app_key = '', aus = False):
