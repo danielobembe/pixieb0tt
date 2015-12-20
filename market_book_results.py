@@ -51,14 +51,16 @@ class MarketBookResult(object):
 
     def printBooks(self):
         print('\n')
+        itern = 0
         for marketBook in self.marketBooks:
-            print("===" * 5)
+            itern += 1
+            print(str(itern) + " ===" * 5)
             print(marketBook.name)
-            for runner in marketBook.runners:
-                print("Runner Name: "+ runner.runnerName)
-                #THis has indicated very clearly
-                #that encapsulatedBook is faulty.
-                #TODO: rewrite encapsulatePrices.
+            # for runner in marketBook.runners:
+            #     print("Runner Name: "+ runner.runnerName)
+            #     #THis has indicated very clearly
+            #     #that encapsulatedBook is faulty.
+            #     #TODO: rewrite encapsulatePrices.
         print("==="*5)
 
     def getLiquidMarket(self):

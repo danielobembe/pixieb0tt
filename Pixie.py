@@ -9,7 +9,7 @@ from betfair.api_ng import API
 from datetime import datetime, timedelta
 import json
 import urllib, urllib.request, urllib.error
-import market_book_results
+import market_book_results as m_b_r
 
 class Pixie(object):
     """betfair laying bot - lays the field using settings.py parameters"""
@@ -192,7 +192,7 @@ class Pixie(object):
             self.prettyPrint(market_book_result)
 
 
-    def encapsulatePrices(self, market_book_result, eventMarkets):
+    def encapsulatePrices_0(self, market_book_result, eventMarkets):
         #if(market_book_result is not None):
         mbr = m_b_r.MarketBookResult()             #create new marketBookResult object
         for marketBook in market_book_result:
@@ -224,10 +224,19 @@ class Pixie(object):
             mbr.addIn(_marketbook)
         return mbr
 
-    def encapsulatePrices(self, marketBooks, eventMarkets):
-        _marketBooks = market_book_results.MarketBookResult()
-        for marketBook in marketBooks:
-            _marketBook = market_book_results.MarketBook()
+    def encapsulatePrices(self, market_book_result, eventMarkets):
+        mbr = m_b_r.MarketBookResult()          #create new MarketBookResult object to hold both marketbooks
+        for marketBook in market_book_result:   #for each marketbook in passed in market_book_results array
+            _marketbook = m_b_r.MarketBook()    #create new MarketBook object to store in MarketBookResult
+            marketId = marketBook["marketId"]   #get marketbook's id
+            marketName = None                   #initialize variable to hold marketbook's name
+            for market in eventMarkets:         #get name from eventMarkets
+                if(marketId == market["marketId"]):
+                    marketName = market["marketName"]
+            _marketbook.marketId    = marketId   #store id in marketbook object
+            _marketbook.name        = marketName #store name in marketbook object
+            mbr.addIn(_marketbook)
+        return mbr
 
 
 
