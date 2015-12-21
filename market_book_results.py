@@ -32,12 +32,12 @@ class MarketBookResult(object):
         self.marketBooks = []
 
     def addIn(self, mbk):
-        print("\n(pre)-Testing: market_book_results.addIn()")
-        #Test#
-        for mbook in self.marketBooks:
-            print("Name: "+ mbook.name + " || Length: "+ str(len(mbook.runners)))
-        #End Test#
-        #
+        # print("\n(pre)-Testing: market_book_results.addIn()")
+        # #Test#
+        # for mbook in self.marketBooks:
+        #     print("Name: "+ mbook.name + " || Length: "+ str(len(mbook.runners)))
+        # #End Test#
+        # #
         self.marketBooks.append(mbk)
         if (self.liquidity['liquidMarket']==''):
             self.liquidity['liquidMarket']= mbk.name
@@ -45,40 +45,26 @@ class MarketBookResult(object):
         else:
             self.liquidity['illiquidMarket'] = mbk.name
             mbk.liquidity = 'illiquidMarket'
-        #
-        #Test
-        print("\n(post)-Testing: market_book_results.addIn()")
-        for mbook in self.marketBooks:
-            print("Name: "+ mbook.name + " || Length: "+ str(len(mbook.runners)))
-        #End Test#
-
-    # def printBooks(self):
-    #     print('Please find Best three available prices for the runners: ')
-    #     for marketBook in self.marketBooks:
-    #         print(("===="* 5)+"Market Name: " + marketBook.name + ("===="* 5))  #Print market
-    #         for runner in marketBook.runners:
-    #             print("Runner Name:   | "+runner.runnerName+" | ...: "+ marketBook.name )
-    #             if (runner.active == True):
-    #                 print ('Available to back price :' + str(runner.availableToBack))
-    #                 print ('Available to lay price :' + str(runner.availableToLay))
-    #             else:
-    #                 print ('This runner is not active')
-    #     return
+        # #
+        # #Test
+        # print("\n(post)-Testing: market_book_results.addIn()")
+        # for mbook in self.marketBooks:
+        #     print("Name: "+ mbook.name + " || Length: "+ str(len(mbook.runners)))
+        # #End Test#
 
     def printBooks(self):
-        print('\n')
-        itern = 0
+        print('Please find Best three available prices for the runners: ')
         for marketBook in self.marketBooks:
-            itern += 1
-            print(str(itern) + " ===" * 5)
-            print(marketBook.name)
-            marketBook.printRunners()
-            #for runner in marketBook.runners:
-            #    print("Runner Name: "+ runner.runnerName)
-            #     #THis has indicated very clearly
-            #     #that encapsulatedBook is faulty.
-            #     #TODO: rewrite encapsulatePrices.
-        print("==="*5)
+            print(("===="* 5)+"Market Name: " + marketBook.name + ("===="* 5))  #Print market
+            for runner in marketBook.runners:
+                print("Runner Name:   | "+runner.runnerName+" | ")
+                if (runner.active == True):
+                    print ('Available to back price :' + str(runner.get_availableToBack()))
+                    print ('Available to lay price :' + str(runner.get_availableToLay()))
+                else:
+                    print ('This runner is not active')
+        return
+
 
     def printBook_0(self):
         print('\n\n')

@@ -255,6 +255,10 @@ class Pixie(object):
                         #print("Adding Runner: " + runnerName)
             _runner.runnerName = runnerName
             _runner.selectionId = selectionId
+            if (runner['status'] == 'ACTIVE'):
+                _runner.set_availableToBack(runner['ex']['availableToBack'])
+                _runner.set_availableToLay(runner['ex']['availableToLay'])
+                _runner.active = True   #else: active==False
             marketbook.append_to_runners(_runner)
 
 
