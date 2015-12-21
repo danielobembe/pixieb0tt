@@ -7,27 +7,37 @@ class propertyDescriptor(object):
         self.data = WeakKeyDictionary()
 
     def __get__(self, instance, owner):
-        #we get here when someone calls x.d, and d is a
-        #NonNegative instance.
-        #instance = x, owner = type(x)
+        #Origin  : x.d
+        #d       = propertyDescriptor instance
+        #x       = instance,
+        #type(x) = owner
         return self.data.get(instance,self.default)
 
     def __set__(self, instance, value):
-        #we get here when someone calls x.d = val, and d is a
-        #NonNegative instance.
-        #instance = x, value = val
+        #Origin : x.d = val,
+        #d      = propertyDescriptor instance
+        #x      = instance
+        #val    = value
         self.data[instance] = value
 
 
 class MarketBookResult(object):
     """Collection of marketbooks."""
-    marketBooks = propertyDescriptor([])
     liquidity = {
         'liquidMarket':'',
         'illiquidMarket':''
     }
 
+    def __init__(self):
+        self.marketBooks = []
+
     def addIn(self, mbk):
+        print("\n(pre)-Testing: market_book_results.addIn()")
+        #Test#
+        for mbook in self.marketBooks:
+            print("Name: "+ mbook.name + " || Length: "+ str(len(mbook.runners)))
+        #End Test#
+        #
         self.marketBooks.append(mbk)
         if (self.liquidity['liquidMarket']==''):
             self.liquidity['liquidMarket']= mbk.name
@@ -35,6 +45,12 @@ class MarketBookResult(object):
         else:
             self.liquidity['illiquidMarket'] = mbk.name
             mbk.liquidity = 'illiquidMarket'
+        #
+        #Test
+        print("\n(post)-Testing: market_book_results.addIn()")
+        for mbook in self.marketBooks:
+            print("Name: "+ mbook.name + " || Length: "+ str(len(mbook.runners)))
+        #End Test#
 
     # def printBooks(self):
     #     print('Please find Best three available prices for the runners: ')
@@ -56,12 +72,19 @@ class MarketBookResult(object):
             itern += 1
             print(str(itern) + " ===" * 5)
             print(marketBook.name)
-            # for runner in marketBook.runners:
-            #     print("Runner Name: "+ runner.runnerName)
+            marketBook.printRunners()
+            #for runner in marketBook.runners:
+            #    print("Runner Name: "+ runner.runnerName)
             #     #THis has indicated very clearly
             #     #that encapsulatedBook is faulty.
             #     #TODO: rewrite encapsulatePrices.
         print("==="*5)
+
+    def printBook_0(self):
+        print('\n\n')
+        marketBook = self.marketBooks[0]
+        print(marketBook.name)
+        marketBook.printRunners()
 
     def getLiquidMarket(self):
         liquid = None
@@ -101,8 +124,19 @@ class MarketBook(object):
     """Class representation of a marketbook, with built-in useful behaviors"""
     marketId = propertyDescriptor(0)
     name = propertyDescriptor('')
-    runners = propertyDescriptor([])
     liquidity = propertyDescriptor('')
+
+    def __init__(self):
+        self.runners = []
+
+    def get_runners(self):
+        return self.runners
+
+    def set_runners(self, value):
+        self.runners = value
+
+    def append_to_runners(self,value):
+        self.runners.append(value)
 
     def computeSyntheticBack(self):
         inverted = []
@@ -130,11 +164,31 @@ class MarketBook(object):
         #print("Price of synthetic Lay: " + str(syntheticLay))
         return syntheticLay
 
+    def printRunners(self):
+        print("Number of runners: "+ str(len(self.runners)))
+        for runner in self.runners:
+            print(runner.runnerName)
+
 
 class Runner(object):
     """Class representation of a runner"""
     selectionId = propertyDescriptor(0)
     runnerName = propertyDescriptor('')
-    availableToBack = propertyDescriptor([])
-    availableToLay = propertyDescriptor([])
     active = propertyDescriptor(False)
+
+    def __init__ (self):
+        self.availableToBack = None
+        self.availableToLay  = None
+
+
+    def get_availableToBack(self):
+        return self.availableToBack
+
+    def set_availableToBack(self, value):
+        self.availableToBack = value
+
+    def get_availableToLay(self):
+        return self.availableToLay
+
+    def set_availableToLay(self, value):
+        self.availableToLay = value

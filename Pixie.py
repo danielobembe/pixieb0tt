@@ -11,6 +11,7 @@ import json
 import urllib, urllib.request, urllib.error
 import market_book_results as m_b_r
 
+
 class Pixie(object):
     """betfair laying bot - lays the field using settings.py parameters"""
     def __init__(self):
@@ -235,8 +236,26 @@ class Pixie(object):
                     marketName = market["marketName"]
             _marketbook.marketId    = marketId   #store id in marketbook object
             _marketbook.name        = marketName #store name in marketbook object
+            #print("Adding Book: " + _marketbook.name)
+            self.addInRunners(_marketbook, marketBook['runners'], eventMarkets)
+            #print(len(mbr.marketBooks))
+            #mbr.marketBooks[len(mbr.marketBooks)] = _marketbook
             mbr.addIn(_marketbook)
         return mbr
+
+    def addInRunners(self, marketbook, runners, eventMarkets):
+        for runner in runners:
+            _runner = m_b_r.Runner()
+            selectionId = runner['selectionId']
+            runnerName = None
+            for market in eventMarkets:
+                for run in market['runners']:
+                    if(run['selectionId']==selectionId):
+                        runnerName = run['runnerName']
+                        #print("Adding Runner: " + runnerName)
+            _runner.runnerName = runnerName
+            _runner.selectionId = selectionId
+            marketbook.append_to_runners(_runner)
 
 
 
@@ -277,7 +296,9 @@ class Pixie(object):
                 marketBooks = self.getMarketPrices(marketIds) #returns marketbooks for selected markets
                 #self.prettyPrint(marketBooks)
                 #self.printPrices(marketBooks)
+                #import pdb; pdb.set_trace()
                 encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
+                #encapsulatedBook.printBooks()
                 encapsulatedBook.printBooks()
                 #encapsulatedBook.callArbitrage()
                 lockIn = False
