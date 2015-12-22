@@ -258,18 +258,16 @@ class Pixie(object):
             if (liquidMarketId == []):
                 print("Correct Score Market not available for this event. Please select another: ")
                 continue
-            #else: print("Liquid Market Id: " + str(liquidMarketId))
             marketIds = self.combineMarkets(liquidMarketId, illiquidMarketId)
-            # print("\nAcquired choice Ids: ")
-            # for each in marketIds:
-            #     print(each)
             lockIn = True
             while lockIn:
                 marketBooks = self.getMarketPrices(marketIds)                        #dict
                 encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets) #object
                 encapsulatedBook.print_liquidities()
                 encapsulatedBook.getLiquidMarket().printRunners()
-                #encapsulatedBook.printBooks()
+                inputList = input("Select runners from 'Correct-Score' market. Seperate with ',':\n")
+                encapsulatedBook.getLiquidMarket().selectRunners(inputList)
+                encapsulatedBook.printBooks()
                 #encapsulatedBook.callArbitrage()
                 lockIn = False
             self.session = False

@@ -108,6 +108,7 @@ class MarketBook(object):
 
     def __init__(self):
         self.runners = []
+        self.user_runnerChoices = []
 
     def get_runners(self):
         return self.runners
@@ -120,34 +121,46 @@ class MarketBook(object):
 
     def computeSyntheticBack(self):
         inverted = []
-        for runner in self.runners:
-            #print("Name: "+ str(runner.runnerName) + " | Back-price: " + str(runner.availableToBack))
+        choices = []
+        if(self.user_runnerChoices == 0):#i.e if it is the illiquid market, because in the liquid market - the user picks the runners (see pixie.py after inputList under while LockIn)
+            choices = self.runners
+        else: choices = self.user_runnerChoices #i.e otherwise we are in the liquid market. user_runnerChoices set in self.selectRunners()
+        for runner in choices:
             """would need to generalize to the entire returned marketprices (right now only computing on best Price)."""
             inverted.append(1/float(runner.availableToBack[0]['price']))
-        #print("List of inverted Back Prices: " + str(inverted))
         invertedSum = sum(inverted)
-        #print("Sum of inverted Back Prices: " + str(invertedSum))
         syntheticBack = float(1/invertedSum)
-        #print("Price of synthetic Back: " + str(syntheticBack))
         return syntheticBack
 
     def computeSyntheticLay(self):
         inverted = []
-        for runner in self.runners:
-            #print("Name: "+ str(runner.runnerName) + " | Back-price: " + str(runner.availableToLay))
+        choices = []
+        if(self.user_runnerChoices == 0):
+            choices = self.runners
+        else: choices = self.user_runnerChoices
+        for runner in choices:
             """would need to generalize to the entire returned marketprices (right now only computing on best Price)."""
             inverted.append(1/float(runner.availableToLay[0]['price']))
-        #print("List of inverted Lay Prices: " + str(inverted))
         invertedSum = sum(inverted)
-        #print("Sum of inverted Lay Prices: " + str(invertedSum))
         syntheticLay = float(1/invertedSum)
-        #print("Price of synthetic Lay: " + str(syntheticLay))
         return syntheticLay
 
     def printRunners(self):
         print("Number of runners: "+ str(len(self.runners)))
         for runner in self.runners:
             print(runner.runnerName)
+
+
+    def selectRunners(self, inputList):
+        print('\n')
+        userChoices = inputList.split(',')
+        for choice in userChoices:
+            for runner in self.runners:
+                if (str(choice)==runner.runnerName):
+                    self.user_runnerChoices.append(runner)
+                    print(str(choice))
+        return
+
 
 
 class Runner(object):
