@@ -23,34 +23,28 @@ class propertyDescriptor(object):
 
 class MarketBookResult(object):
     """Collection of marketbooks."""
-    liquidity = {
-        'liquidMarket':'',
-        'illiquidMarket':''
-    }
+
 
     def __init__(self):
         self.marketBooks = []
+        self.liquidity = {
+            'liquidMarket':'',
+            'illiquidMarket':''
+        }
+
+    def print_liquidities(self):
+        print('Liquid Market: ' + self.liquidity['liquidMarket'])
+        print('Illiquid Market: '+ self.liquidity['illiquidMarket'])
+
 
     def addIn(self, mbk):
-        # print("\n(pre)-Testing: market_book_results.addIn()")
-        # #Test#
-        # for mbook in self.marketBooks:
-        #     print("Name: "+ mbook.name + " || Length: "+ str(len(mbook.runners)))
-        # #End Test#
-        # #
         self.marketBooks.append(mbk)
-        if (self.liquidity['liquidMarket']==''):
-            self.liquidity['liquidMarket']= mbk.name
+        if (mbk.name == 'Correct Score'):
+            self.liquidity['liquidMarket'] = mbk.name
             mbk.liquidity = 'liquidMarket'
         else:
             self.liquidity['illiquidMarket'] = mbk.name
             mbk.liquidity = 'illiquidMarket'
-        # #
-        # #Test
-        # print("\n(post)-Testing: market_book_results.addIn()")
-        # for mbook in self.marketBooks:
-        #     print("Name: "+ mbook.name + " || Length: "+ str(len(mbook.runners)))
-        # #End Test#
 
     def printBooks(self):
         print('Please find Best three available prices for the runners: ')

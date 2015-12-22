@@ -193,38 +193,6 @@ class Pixie(object):
             self.prettyPrint(market_book_result)
 
 
-    def encapsulatePrices_0(self, market_book_result, eventMarkets):
-        #if(market_book_result is not None):
-        mbr = m_b_r.MarketBookResult()             #create new marketBookResult object
-        for marketBook in market_book_result:
-            _marketbook = m_b_r.MarketBook()       #create new marketBook object
-            marketId = marketBook["marketId"]
-            marketName = None
-            for market in eventMarkets:
-                if(marketId == market["marketId"]):
-                    marketName = market["marketName"]
-            _marketbook.name = marketName         #marketBook.name = marketName
-            #print(marketName)
-            _marketbook.marketId = marketId       #marketBook.marketId = marketId
-            runners = marketBook['runners']
-            for runner in runners:
-                _runner = m_b_r.Runner()          #create new Runner object
-                selectionId = runner["selectionId"]
-                runnerName = None
-                for market in eventMarkets:
-                    for run in market["runners"]:
-                        if(run['selectionId']==selectionId):
-                            runnerName = run["runnerName"]
-                _runner.runnerName = runnerName   #Runner.runnerName = runnerName
-                _runner.selectionId = selectionId #Runner.selectionId = selectionId
-                if (runner['status'] == 'ACTIVE'):
-                    _runner.availableToBack = runner['ex']['availableToBack']
-                    _runner.availableToLay = runner['ex']['availableToLay']
-                    _runner.active = True   #else: active==False
-                _marketbook.runners.append(_runner)
-            mbr.addIn(_marketbook)
-        return mbr
-
     def encapsulatePrices(self, market_book_result, eventMarkets):
         mbr = m_b_r.MarketBookResult()          #create new MarketBookResult object to hold both marketbooks
         for marketBook in market_book_result:   #for each marketbook in passed in market_book_results array
@@ -297,13 +265,11 @@ class Pixie(object):
             #     print(each)
             lockIn = True
             while lockIn:
-                marketBooks = self.getMarketPrices(marketIds) #returns marketbooks for selected markets
-                #self.prettyPrint(marketBooks)
-                #self.printPrices(marketBooks)
-                #import pdb; pdb.set_trace()
-                encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
+                marketBooks = self.getMarketPrices(marketIds)                        #dict
+                encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets) #object
+                encapsulatedBook.print_liquidities()
+                encapsulatedBook.getLiquidMarket().printRunners()
                 #encapsulatedBook.printBooks()
-                encapsulatedBook.printBooks()
                 #encapsulatedBook.callArbitrage()
                 lockIn = False
             self.session = False
