@@ -260,17 +260,21 @@ class Pixie(object):
                 continue
             marketIds = self.combineMarkets(liquidMarketId, illiquidMarketId)
             lockIn = True
+            skip = False
+            inputList = []
             while lockIn:
                 marketBooks = self.getMarketPrices(marketIds)                        #dict
                 encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets) #object
-                encapsulatedBook.print_liquidities()
-                encapsulatedBook.getLiquidMarket().printRunners()
-                inputList = input("Select runners from 'Correct-Score' market. Seperate with ',':\n")
+                if(len(inputList) == 0):
+                    encapsulatedBook.print_liquidities()
+                    encapsulatedBook.getLiquidMarket().printRunners()
+                    inputList = input("Select runners from 'Correct-Score' market. Seperate with ',':\n")
+                    #skip = True
                 encapsulatedBook.getLiquidMarket().selectRunners(inputList)
-                encapsulatedBook.printBooks()
-                #encapsulatedBook.callArbitrage()
-                lockIn = False
-            self.session = False
+                #encapsulatedBook.printBooks()
+                encapsulatedBook.callArbitrage()
+                #lockIn = False
+            #self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
             print(msg)

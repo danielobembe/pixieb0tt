@@ -91,13 +91,23 @@ class MarketBookResult(object):
         illiquidBack = illiquid.computeSyntheticBack()
         illiquidLay = illiquid.computeSyntheticLay()
         #conditions:
-        if (liquidBack >= illiquidLay):
-            print('Arbitrage, profit: '+ (liquidBack - illiquidLay))
-        if (liquidLay <= illiquidBack):
-            print('Arbitrage, profit: '+ (liquidLay - illiquidBack))
-        if (liquidBack < illiquidLay or liquidLay > illiquidBack ):
-            print('No-Arb condition holding.') #<=======
+        if (liquidBack >= illiquidLay or illiquidBack >= liquidLay):
+            if (liquidBack >= illiquidLay):
+                print('Arbitrage, profit: '+ str(liquidBack - illiquidLay))
+                print("This one.")
+            if (illiquidBack >= liquidLay):
+                print('Arbitrage, profit: '+ str(liquidLay - illiquidBack))
+                print("This two.")
+        else:
+            print('No-Arb condition holding.')
         return
+        # if ((liquidBack < illiquidLay)):
+        #     print('No-arb condition holding.')
+        #     print("This three.")
+        # if ((illiquidBack < liquidLay)):
+        #     print('No-Arb condition holding.') #<=======
+        #     print("This four.")
+
 
 
 class MarketBook(object):
@@ -122,7 +132,7 @@ class MarketBook(object):
     def computeSyntheticBack(self):
         inverted = []
         choices = []
-        if(self.user_runnerChoices == 0):#i.e if it is the illiquid market, because in the liquid market - the user picks the runners (see pixie.py after inputList under while LockIn)
+        if(len(self.user_runnerChoices) == 0):#i.e if it is the illiquid market, because in the liquid market - the user picks the runners (see pixie.py after inputList under while LockIn)
             choices = self.runners
         else: choices = self.user_runnerChoices #i.e otherwise we are in the liquid market. user_runnerChoices set in self.selectRunners()
         for runner in choices:
@@ -135,7 +145,7 @@ class MarketBook(object):
     def computeSyntheticLay(self):
         inverted = []
         choices = []
-        if(self.user_runnerChoices == 0):
+        if(len(self.user_runnerChoices) == 0):
             choices = self.runners
         else: choices = self.user_runnerChoices
         for runner in choices:
@@ -158,7 +168,7 @@ class MarketBook(object):
             for runner in self.runners:
                 if (str(choice)==runner.runnerName):
                     self.user_runnerChoices.append(runner)
-                    print(str(choice))
+                    #print(str(choice))
         return
 
 
