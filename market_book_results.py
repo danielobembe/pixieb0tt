@@ -101,12 +101,7 @@ class MarketBookResult(object):
         else:
             print('No-Arb condition holding.')
         return
-        # if ((liquidBack < illiquidLay)):
-        #     print('No-arb condition holding.')
-        #     print("This three.")
-        # if ((illiquidBack < liquidLay)):
-        #     print('No-Arb condition holding.') #<=======
-        #     print("This four.")
+
 
 
 
