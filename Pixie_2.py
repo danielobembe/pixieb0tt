@@ -8,7 +8,7 @@ from time import time, sleep
 from betfair.api_ng import API
 from datetime import datetime, timedelta
 import json
-import urllib, urllib.request, urllib.error
+#import urllib, urllib.request, urllib.error
 import market_book_results as m_b_r
 
 class Pixie(object):
@@ -239,7 +239,7 @@ class Pixie(object):
                 #self.printPrices(marketBooks)
                 encapsulatedBook = self.encapsulatePrices(marketBooks, eventMarkets)
                 encapsulatedBook.printBooks()
-                lockIn = False
+                lockIn = True
             #self.session = False
         if not self.session:
             msg = 'SESSION TIMEOUT'
